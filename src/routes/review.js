@@ -1,7 +1,7 @@
 // 评价管理模块：发表评价、查看评价、卖家回复、信用分统计
 import { db, audit } from '../db.js';
 import { requireUser } from '../auth.js';
-import { ok, bad, notFound, forbidden, parseUrl } from '../util.js';
+import { ok, bad, notFound, forbidden, parseUrl, now } from '../util.js';
 
 // 信用分规则：以 3 分为中性，每高出 1 分 +4，每低 1 分 -4，范围 [0,150]
 function creditDelta(score) {
@@ -45,6 +45,21 @@ export function registerReview(router) {
     }
     audit('user', me.sub, 'REVIEW_CREATE', `订单#${order_id} ${score}分`);
     return ok(res, null, '评价发表成功，感谢你的反馈');
+  });
+
+  // 追加评价：评价发表后可补充一次使用感受（限作者本人、限一次，不影响原评分与信用分）
+  router.put('/api/review/:id/additional', async (req, res, body, params) => {
+    const me = requireUser(req);
+    const content = String(body.content || '').trim();
+    if (!content) throw bad('请填写追加评价内容');
+    if (content.length > 500) throw bad('追加评价不能超过 500 字');
+    const r = db.prepare('SELECT * FROM t_review WHERE review_id=?').get(Number(params.id));
+    if (!r) throw notFound('评价不存在');
+    if (r.user_id !== me.sub) throw forbidden('只有评价作者本人可以追加评价');
+    if (r.additional) throw bad('该评价已追加过，仅可追加一次');
+    db.prepare('UPDATE t_review SET additional=?, additional_at=? WHERE review_id=?').run(content, now(), r.review_id);
+    audit('user', me.sub, 'REVIEW_ADDITIONAL', `评价#${r.review_id}`);
+    return ok(res, null, '追加评价发表成功');
   });
 
   // 卖家回复评价

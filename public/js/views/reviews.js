@@ -46,6 +46,9 @@ export async function render(root) {
     if (isReceived && !r.reply) {
       actions.append(h('button', { class: 'btn btn-ghost btn-sm', text: '回复评价', onClick: () => reply(r, reload) }));
     }
+    if (!isReceived && !r.additional) {
+      actions.append(h('button', { class: 'btn btn-ghost btn-sm', text: '追加评价', onClick: () => appendAdditional(r, reload) }));
+    }
     actions.append(h('button', { class: 'btn btn-ghost btn-sm', text: '查看商品', onClick: () => go('#/goods/' + r.goods_id) }));
 
     return h('div', { class: 'review-item' },
@@ -59,6 +62,13 @@ export async function render(root) {
       ),
       h('div', { class: 'small muted', style: { marginBottom: 'var(--space-6)' } }, '商品：', r.goods_title),
       r.content ? h('div', { class: 'review-content', text: r.content }) : h('div', { class: 'muted small', text: '（买家未填写文字评价）' }),
+      r.additional
+        ? h('div', { class: 'review-additional' },
+            h('div', {},
+              h('b', { text: '追加评价' }),
+              h('span', { class: 'small muted', style: { marginLeft: 'var(--space-6)' }, text: timeAgo(r.additional_at || r.created_at) })),
+            h('div', { style: { marginTop: 'var(--space-4)' }, text: r.additional }))
+        : null,
       r.reply ? h('div', { class: 'review-reply' }, h('b', { text: '卖家回复：' }), r.reply) : null,
       actions
     );
@@ -68,6 +78,19 @@ export async function render(root) {
     const d = await formDialog({ title: '回复评价', okText: '发布回复', fields: [{ name: 'reply', label: '回复内容', type: 'textarea', required: true, placeholder: '感谢支持，或对买家反馈作出说明' }] });
     if (!d) return;
     try { await api.post(`/api/review/${r.review_id}/reply`, { reply: d.reply }); toast('回复成功', 'success'); reload(); }
+    catch (e) { toast(e.message, 'error'); }
+  }
+
+  // 追加评价（仅评价作者本人，限一次）
+  async function appendAdditional(r, reload) {
+    const d = await formDialog({
+      title: '追加评价',
+      okText: '发表追加',
+      fields: [{ name: 'content', label: '追加评价', type: 'textarea', required: true, rows: 3,
+        placeholder: '使用一段时间后的补充感受，例如质量、耐用度；仅可追加一次' }],
+    });
+    if (!d) return;
+    try { await api.put(`/api/review/${r.review_id}/additional`, { content: d.content }); toast('追加评价发表成功', 'success'); reload(); }
     catch (e) { toast(e.message, 'error'); }
   }
 

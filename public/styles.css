@@ -284,6 +284,11 @@ tbody tr:hover { background: var(--table-row-hover); }
   border-radius: var(--radius-8); font-size: var(--font-size-sm); color: var(--brand-dark); position: relative;
 }
 .review-reply b { font-weight: var(--font-weight-bold); }
+.review-additional {
+  margin-top: var(--space-10); margin-left: var(--space-20); padding: var(--space-10) var(--space-14); background: var(--color-bg-subtle);
+  border-left: 3px solid var(--color-info); border-radius: var(--radius-8); font-size: var(--font-size-sm); color: var(--color-text-secondary);
+}
+.review-additional b { font-weight: var(--font-weight-bold); color: var(--color-info-fg); }
 
 .order-card { border: 1px solid var(--line); border-radius: var(--radius-12); margin-bottom: var(--space-14); overflow: hidden; background: var(--color-bg-surface); }
 .order-head {

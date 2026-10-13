@@ -65,6 +65,9 @@ export async function render(root) {
         actions.append(h('button', { class: 'btn btn-accent btn-sm', text: '评价交易', onClick: () => reviewOrder(o, load) }));
       } else if (o.order_status === 3 && o.reviewed) {
         actions.append(h('span', { class: 'badge badge-ok', text: '已评价' }));
+        o.additional_added
+          ? actions.append(h('span', { class: 'badge badge-info', text: '已追加' }))
+          : actions.append(h('button', { class: 'btn btn-ghost btn-sm', text: '追加评价', onClick: () => appendReview(o, load) }));
       }
     } else {
       if (o.order_status === 0) {
@@ -94,7 +97,11 @@ export async function render(root) {
             ' · ', o.goods_category),
           h('div', { class: 'price', style: { marginTop: 'var(--space-6)' } }, h('small', { text: '¥' }), String(Number(o.amount).toFixed(2))),
           o.pay_time ? h('div', { class: 'small muted', text: `支付时间 ${fmtTime(o.pay_time)}` }) : null,
-          o.finish_time ? h('div', { class: 'small muted', text: `完成时间 ${fmtTime(o.finish_time)}` }) : null
+          o.finish_time ? h('div', { class: 'small muted', text: `完成时间 ${fmtTime(o.finish_time)}` }) : null,
+          o.order_status === 4 && o.cancel_reason
+            ? h('div', { class: 'small', style: { color: 'var(--danger)', marginTop: 'var(--space-4)' } },
+                `取消原因（${o.cancel_by === o.buyer_id ? '买家' : '卖家'}）：${o.cancel_reason}`)
+            : null
         ),
         actions
       )
@@ -123,9 +130,16 @@ async function confirmOrder(o, reload) {
   catch (e) { toast(e.message, 'error'); }
 }
 async function cancelOrder(o, reload) {
-  const okc = await confirmDialog('确认取消该订单？取消后不可恢复。', { title: '取消订单', okText: '确认取消', danger: true });
-  if (!okc) return;
-  try { await api.put('/api/order/cancel', { order_id: o.order_id }); toast('订单已取消', 'success'); reload(); }
+  const d = await formDialog({
+    title: '取消订单',
+    okText: '确认取消',
+    fields: [
+      { name: 'reason', label: '取消原因', type: 'textarea', required: true, rows: 3,
+        placeholder: '必填，将展示给对方。例如：拍错了规格 / 卖家迟迟未发货 / 临时不需要了' },
+    ],
+  });
+  if (!d) return;
+  try { await api.put('/api/order/cancel', { order_id: o.order_id, reason: d.reason }); toast('订单已取消', 'success'); reload(); }
   catch (e) { toast(e.message, 'error'); }
 }
 async function reviewOrder(o, reload) {
@@ -141,6 +155,24 @@ async function reviewOrder(o, reload) {
   try {
     await api.post('/api/review', { order_id: o.order_id, score: Number(d.score), content: d.content });
     toast('评价发表成功，感谢你的反馈', 'success');
+    reload();
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+// 追加评价：评价发表后可补充一次使用感受（限一次）
+async function appendReview(o, reload) {
+  const d = await formDialog({
+    title: '追加评价',
+    okText: '发表追加',
+    fields: [
+      { name: 'content', label: '追加评价', type: 'textarea', required: true, rows: 3,
+        placeholder: '使用一段时间后的补充感受，例如质量、耐用度；仅可追加一次' },
+    ],
+  });
+  if (!d) return;
+  try {
+    await api.put(`/api/review/${o.my_review_id}/additional`, { content: d.content });
+    toast('追加评价发表成功', 'success');
     reload();
   } catch (e) { toast(e.message, 'error'); }
 }

@@ -243,6 +243,13 @@ export function reviewItem(r) {
       h('span', { class: 'review-time', text: timeAgo(r.created_at) })
     ),
     r.content ? h('div', { class: 'review-content', text: r.content }) : null,
+    r.additional
+      ? h('div', { class: 'review-additional' },
+          h('div', {},
+            h('b', { text: '追加评价' }),
+            h('span', { class: 'small muted', style: { marginLeft: 'var(--space-6)' }, text: timeAgo(r.additional_at || r.created_at) })),
+          h('div', { style: { marginTop: 'var(--space-4)' }, text: r.additional }))
+      : null,
     r.reply ? h('div', { class: 'review-reply' }, h('b', { text: '卖家回复：' }), r.reply) : null
   );
 }

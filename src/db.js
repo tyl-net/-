@@ -74,6 +74,8 @@ CREATE TABLE IF NOT EXISTS t_order (
   order_status INTEGER      NOT NULL DEFAULT 0,
   pay_time     DATETIME,
   finish_time  DATETIME,
+  cancel_reason VARCHAR(200),
+  cancel_by     INTEGER,
   created_at   DATETIME     DEFAULT CURRENT_TIMESTAMP,
   updated_at   DATETIME     DEFAULT CURRENT_TIMESTAMP
 );
@@ -86,6 +88,8 @@ CREATE TABLE IF NOT EXISTS t_review (
   score      INTEGER NOT NULL,
   content    VARCHAR(500),
   reply      VARCHAR(500),
+  additional VARCHAR(500),
+  additional_at DATETIME,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -144,6 +148,14 @@ function ensureColumn(table, column, ddl) {
 }
 // 商品软删除标记：删除时置 1，各查询按 is_deleted=0 过滤，保证历史订单/评价的引用完整
 ensureColumn('t_goods', 'is_deleted', 'is_deleted INTEGER DEFAULT 0');
+
+// 取消订单（v1.1）：必填取消原因，记录取消操作人
+ensureColumn('t_order', 'cancel_reason', 'cancel_reason VARCHAR(200)');
+ensureColumn('t_order', 'cancel_by', 'cancel_by INTEGER');
+
+// 追加评价（v1.1）：评价发表后可补充一次使用感受，限一次
+ensureColumn('t_review', 'additional', 'additional VARCHAR(500)');
+ensureColumn('t_review', 'additional_at', 'additional_at DATETIME');
 
 // 商品类别（与前端下拉一致）
 export const CATEGORIES = ['教材书籍', '电子数码', '生活用品', '体育运动', '服饰美妆', '其他'];
@@ -209,31 +221,31 @@ export function seedIfEmpty() {
   );
 
   const insOrder = db.prepare(
-    `INSERT INTO t_order(order_no,buyer_id,seller_id,goods_id,amount,order_status,pay_time,finish_time,created_at,updated_at)
-     VALUES(?,?,?,?,?,?,?,?,?,?)`
+    `INSERT INTO t_order(order_no,buyer_id,seller_id,goods_id,amount,order_status,pay_time,finish_time,cancel_reason,cancel_by,created_at,updated_at)
+     VALUES(?,?,?,?,?,?,?,?,?,?,?,?)`
   );
-  // [订单号, 买家, 卖家, 商品, 金额, 状态, 支付时间, 完成时间, 创建时间]
+  // [订单号, 买家, 卖家, 商品, 金额, 状态, 支付时间, 完成时间, 创建时间, [取消原因, 取消人]]
   const orders = [
-    ['CM202609220850001', 1, 3, 7, 199.0, 3, '2026-09-22 08:56:00', '2026-09-24 10:00:00', '2026-09-22 08:50:00'],
-    ['CM202609261420002', 1, 2, 3, 480.0, 2, '2026-09-26 14:31:00', null, '2026-09-26 14:20:00'],
-    ['CM202610092010003', 1, 2, 4, 22.0, 0, null, null, '2026-10-09 20:10:00'],
-    ['CM202609150935004', 2, 1, 2, 429.0, 3, '2026-09-15 09:41:00', '2026-09-17 16:00:00', '2026-09-15 09:35:00'],
-    ['CM202609131015005', 3, 1, 1, 18.0, 3, '2026-09-13 10:18:00', '2026-09-15 09:30:00', '2026-09-13 10:15:00'],
-    ['CM202610081100006', 4, 1, 5, 168.0, 1, '2026-10-08 11:05:00', null, '2026-10-08 11:00:00'],
-    ['CM202609281920007', 5, 3, 8, 12.0, 4, null, null, '2026-09-28 19:20:00'],
-    ['CM202609061030008', 4, 2, 13, 55.0, 3, '2026-09-06 10:36:00', '2026-09-08 12:20:00', '2026-09-06 10:30:00'],
+    ['CM202609220850001', 1, 3, 7, 199.0, 3, '2026-09-22 08:56:00', '2026-09-24 10:00:00', '2026-09-22 08:50:00', null],
+    ['CM202609261420002', 1, 2, 3, 480.0, 2, '2026-09-26 14:31:00', null, '2026-09-26 14:20:00', null],
+    ['CM202610092010003', 1, 2, 4, 22.0, 0, null, null, '2026-10-09 20:10:00', null],
+    ['CM202609150935004', 2, 1, 2, 429.0, 3, '2026-09-15 09:41:00', '2026-09-17 16:00:00', '2026-09-15 09:35:00', null],
+    ['CM202609131015005', 3, 1, 1, 18.0, 3, '2026-09-13 10:18:00', '2026-09-15 09:30:00', '2026-09-13 10:15:00', null],
+    ['CM202610081100006', 4, 1, 5, 168.0, 1, '2026-10-08 11:05:00', null, '2026-10-08 11:00:00', null],
+    ['CM202609281920007', 5, 3, 8, 12.0, 4, null, null, '2026-09-28 19:20:00', ['拍错了教材版本，重新下单了', 5]],
+    ['CM202609061030008', 4, 2, 13, 55.0, 3, '2026-09-06 10:36:00', '2026-09-08 12:20:00', '2026-09-06 10:30:00', null],
   ];
   orders.forEach((o) =>
-    insOrder.run(o[0], o[1], o[2], o[3], o[4], o[5], o[6], o[7], o[8], o[8])
+    insOrder.run(o[0], o[1], o[2], o[3], o[4], o[5], o[6], o[7], o[9] ? o[9][0] : null, o[9] ? o[9][1] : null, o[8], o[8])
   );
 
   const insReview = db.prepare(
-    `INSERT INTO t_review(order_id,user_id,goods_id,score,content,reply,created_at) VALUES(?,?,?,?,?,?,?)`
+    `INSERT INTO t_review(order_id,user_id,goods_id,score,content,reply,additional,additional_at,created_at) VALUES(?,?,?,?,?,?,?,?,?)`
   );
-  insReview.run(1, 1, 7, 5, '跑鞋和描述一致，几乎没磨损，卖家还送了一双鞋垫，很靠谱！', '谢谢！祝你跑步愉快～', '2026-09-24 10:30:00');
-  insReview.run(4, 2, 2, 5, '鼠标成色很好，包装配件都齐全，卖家沟通很顺畅。', '感谢支持，欢迎再来！', '2026-09-17 16:40:00');
-  insReview.run(5, 3, 1, 4, '教材和描述一致，价格实惠，就是书角稍微有点折。', '谢谢同学反馈，祝你考研顺利！', '2026-09-15 10:02:00');
-  insReview.run(8, 4, 13, 5, '书桌很结实，卖家帮忙搬到了宿舍楼下，好评！', null, '2026-09-08 13:00:00');
+  insReview.run(1, 1, 7, 5, '跑鞋和描述一致，几乎没磨损，卖家还送了一双鞋垫，很靠谱！', '谢谢！祝你跑步愉快～', '穿了两周来追加：缓震依旧在线，已经跑了十公里没有开胶，这单很值。', '2026-10-08 21:30:00', '2026-09-24 10:30:00');
+  insReview.run(4, 2, 2, 5, '鼠标成色很好，包装配件都齐全，卖家沟通很顺畅。', '感谢支持，欢迎再来！', null, null, '2026-09-17 16:40:00');
+  insReview.run(5, 3, 1, 4, '教材和描述一致，价格实惠，就是书角稍微有点折。', '谢谢同学反馈，祝你考研顺利！', null, null, '2026-09-15 10:02:00');
+  insReview.run(8, 4, 13, 5, '书桌很结实，卖家帮忙搬到了宿舍楼下，好评！', null, null, null, '2026-09-08 13:00:00');
 
   // 管理员：admin / 123456（超级管理员）、auditor / 123456（普通管理员）
   const insAdmin = db.prepare(

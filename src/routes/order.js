@@ -5,7 +5,9 @@ import { requireUser } from '../auth.js';
 import { ok, bad, notFound, forbidden, parseUrl, genOrderNo, now } from '../util.js';
 
 const ORDER_COLS = `o.*, g.title AS goods_title, g.images AS goods_images, g.category AS goods_category,
-  ub.nickname AS buyer_name, us.nickname AS seller_name`;
+  ub.nickname AS buyer_name, us.nickname AS seller_name,
+  (SELECT r.review_id FROM t_review r WHERE r.order_id=o.order_id) AS my_review_id,
+  (SELECT COUNT(*) FROM t_review r WHERE r.order_id=o.order_id AND r.additional IS NOT NULL) AS additional_added`;
 
 export function registerOrder(router) {
   // 创建订单（对商品下单）
@@ -78,15 +80,20 @@ export function registerOrder(router) {
     return ok(res, { order_status: 3 }, '确认收货成功，货款已结算给卖家');
   });
 
-  // 取消订单
+  // 取消订单（终态前买卖双方均可；必须填写取消原因，展示给对方并记入审计日志）
   router.put('/api/order/cancel', async (req, res, body) => {
     const me = requireUser(req);
     const o = requiresOrder(req, body.order_id);
     if (o.buyer_id !== me.sub && o.seller_id !== me.sub) throw forbidden('无权操作该订单');
     if (o.order_status >= 3) throw bad(`订单已是「${ORDER_STATUS[o.order_status]}」终态，无法取消`);
-    db.prepare('UPDATE t_order SET order_status=4, updated_at=? WHERE order_id=?').run(now(), o.order_id);
-    audit('user', me.sub, 'ORDER_CANCEL', o.order_no);
-    return ok(res, { order_status: 4 }, '订单已取消');
+    const reason = String(body.reason || '').trim();
+    if (!reason) throw bad('请填写取消原因，让对方知悉');
+    if (reason.length > 200) throw bad('取消原因不能超过 200 字');
+    const t = now();
+    db.prepare('UPDATE t_order SET order_status=4, cancel_reason=?, cancel_by=?, updated_at=? WHERE order_id=?')
+      .run(reason, me.sub, t, o.order_id);
+    audit('user', me.sub, 'ORDER_CANCEL', `${o.order_no} 原因：${reason}`);
+    return ok(res, { order_status: 4, cancel_reason: reason }, '订单已取消');
   });
 
   // 订单列表：role=buyer|seller，可按状态筛选
