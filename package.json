@@ -1,0 +1,22 @@
+{
+  "name": "campus-market",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "校园二手交易平台 —— 软件工程课程作业配套可运行系统（零外部依赖）",
+  "main": "server.js",
+  "scripts": {
+    "start": "node --no-warnings server.js",
+    "reset": "node --no-warnings -e \"import('node:fs').then(fs=>fs.rmSync('data/market.db',{force:true}))\"",
+    "tokens": "node tools/export-tokens.mjs",
+    "audit:contrast": "node test/contrast-audit.js",
+    "lint:design": "node test/design-lint.js",
+    "audit:design": "node test/design-audit.js",
+    "check:design": "node test/design-lint.js && node test/contrast-audit.js && node tools/export-tokens.mjs",
+    "test": "node test/smoke.js && node test/browser-check.js",
+    "shot:design": "node test/shot-design-system.js"
+  },
+  "engines": {
+    "node": ">=22.5.0"
+  }
+}

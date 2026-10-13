@@ -1,0 +1,370 @@
+/* ==========================================================================
+   校园集市 · 设计令牌（Design Tokens）
+   唯一真源（Single Source of Truth）—— 所有颜色/字体/间距/圆角/阴影/动效
+   一律在此定义，产品样式表与规范页均只引用 var()，不再出现裸值。
+
+   层级：
+     Tier 1 基础层（Primitive）  ── 与业务无关的原始色板与刻度
+     Tier 2 语义层（Semantic）   ── 描述"用途"的角色变量，产品代码只应引用这一层
+     Tier 3 组件层（Component）  ── 组件专属的别名，便于单点微调
+
+   版本：v1.0.0 ｜ 基线：2026-10-10
+   ========================================================================== */
+
+:root {
+  /* ======================================================================
+     Tier 1 · 基础色板（Primitive Color）
+     ====================================================================== */
+
+  /* 品牌 · 青绿（主色，取自现有产品 #0e9f8e 并向两端扩展） */
+  --teal-50: #e6f6f4;
+  --teal-100: #c9ece8;
+  --teal-200: #9ddcd5;
+  --teal-300: #63c8bd;
+  --teal-400: #34b8a5;
+  --teal-450: #4cc9b6;   /* 渐变亮端，保留以维持既有配色 */
+  --teal-500: #0e9f8e;   /* ★ 品牌主色 */
+  --teal-600: #0b8174;
+  --teal-700: #096a5f;
+  --teal-800: #08564e;
+  --teal-900: #06453f;
+
+  /* 中性 · 灰蓝（文本、边框、背景） */
+  --slate-0: #ffffff;
+  --slate-25: #fafbfc;
+  --slate-50: #f5f7fa;
+  --slate-100: #eef1f5;
+  --slate-150: #e8ecf1;
+  --slate-200: #dde3ea;
+  --slate-250: #d5dde6;   /* 卡片悬浮边框 */
+  --slate-300: #c4ccd8;
+  --slate-350: #b4bdc9;
+  --slate-400: #8a94a6;
+  --slate-500: #6b7686;
+  --slate-550: #66707f;   /* 三级文本专用：白底 5.01:1、页底 4.67:1，满足 AA */
+  --slate-600: #4a5568;
+  --slate-700: #333c4a;
+  --slate-800: #1c2430;
+  --slate-900: #111826;
+
+  /* 功能色 · 危险 / 成功 / 警告 / 信息 */
+  --red-25: #fff7f7;
+  --red-50: #fdecec;
+  --red-100: #fbd9d9;
+  --red-200: #ffe0e0;
+  --red-300: #f7c9c9;
+  --red-500: #e5484d;   /* 品牌危险色（装饰/图标），白字对比 3.91 不达标 */
+  --red-600: #cf3b40;   /* 危险动作底色（白字 4.82:1 ✅） */
+  --red-650: #c0343a;   /* 价格数字（白底 5.54:1、页底 5.16:1 ✅） */
+  --red-700: #b42318;   /* 浅底之上的危险文字（6.57:1 ✅） */
+
+  --green-25: #f5fcf6;
+  --green-50: #eaf7ec;
+  --green-100: #d3eed8;
+  --green-200: #c3e6c8;
+  --green-500: #2f9e44;
+  --green-600: #1c7a2e;
+
+  --amber-25: #fffaf2;
+  --amber-50: #fff5e2;
+  --amber-100: #ffe2b0;
+  --amber-200: #ffe2b0;
+  --amber-500: #d98200;
+  --amber-700: #8a5200;
+
+  --blue-50: #eaf1fe;
+  --blue-100: #cfe0fb;
+  --blue-200: #cfe0fb;
+  --blue-500: #3b6fd4;
+  --blue-600: #2f5cb8;
+
+  --orange-500: #f2994a;   /* 品牌强调色（装饰/渐变），白字 2.23 不达标 */
+  --orange-600: #e0862f;
+  --orange-700: #c2410c;   /* 强调动作底色（白字 5.18:1 ✅） */
+  --orange-800: #a34700;   /* 强调动作 hover（白字 6.07:1 ✅） */
+
+  --gold-500: #ffb400;   /* 装饰用金（如需要品牌金色） */
+  --gold-600: #bf8200;   /* 评分星标专用（白底 3.28:1 ✅ 满足非文本 3:1） */
+  --violet-500: #7b61ff;
+  --pink-500: #e26d9b;
+  --indigo-500: #5b8def;
+  --indigo-300: #8fb4ff;
+  --pink-300: #ffb0cb;
+  --violet-300: #b3a3ff;
+  --slate-viz-500: #78849e;
+  --slate-viz-300: #aab4c6;
+
+  /* 表达色 · 商品品类封面与头像（数据可视化用，不作 UI 语义色） */
+  --viz-book-1: #5b8def;       --viz-book-2: #8fb4ff;      /* 教材书籍 */
+  --viz-digital-1: #0e9f8e;    --viz-digital-2: #5fd3c0;   /* 电子数码 */
+  --viz-life-1: #f2994a;       --viz-life-2: #ffc17a;      /* 生活用品 */
+  --viz-sport-1: #7b61ff;      --viz-sport-2: #b3a3ff;     /* 体育运动 */
+  --viz-fashion-1: #e26d9b;    --viz-fashion-2: #ffb0cb;   /* 服饰美妆 */
+  --viz-other-1: #78849e;      --viz-other-2: #aab4c6;     /* 其他 */
+
+  /* ======================================================================
+     Tier 1 · 字体刻度（Primitive Typography）
+     ====================================================================== */
+  --font-family-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+                      "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --font-family-mono: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+
+  /* 字号刻度：11 / 12 / 13 / 14 / 16 / 18 / 20 / 26 / 32 / 40 */
+  --font-size-2xs: 11px;   /* 徽章、极小角标 */
+  --font-size-xs: 12px;    /* 表格、元信息、辅助说明 */
+  --font-size-sm: 13px;    /* 次要正文、按钮、列表 */
+  --font-size-md: 14px;    /* 正文基准 */
+  --font-size-lg: 16px;    /* 卡片标题、小标题 */
+  --font-size-xl: 18px;    /* 区块标题 */
+  --font-size-2xl: 20px;   /* 页面标题 */
+  --font-size-3xl: 26px;   /* 价格大字、统计数值 */
+  --font-size-4xl: 32px;   /* 登录页主标题 */
+  --font-size-5xl: 40px;   /* 空状态图标 */
+
+  /* 字重 */
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* 行高 */
+  --line-height-none: 1;
+  --line-height-tight: 1.3;
+  --line-height-snug: 1.45;
+  --line-height-base: 1.6;
+  --line-height-relaxed: 1.75;
+
+  /* 字距 */
+  --letter-spacing-tight: -0.01em;
+  --letter-spacing-normal: 0;
+  --letter-spacing-wide: 0.02em;
+  --letter-spacing-wider: 0.08em;
+  --letter-spacing-widest: 0.12em;
+
+  /* ======================================================================
+     Tier 1 · 间距刻度（Primitive Spacing）
+     基准 2px；令牌名即像素值，便于对照
+     ====================================================================== */
+  --space-1: 1px;    /* 发丝级偏移（负 margin 对齐、细边框） */
+  --space-2: 2px;
+  --space-4: 4px;
+  --space-6: 6px;
+  --space-8: 8px;
+  --space-10: 10px;
+  --space-12: 12px;
+  --space-14: 14px;
+  --space-16: 16px;
+  --space-18: 18px;
+  --space-20: 20px;
+  --space-22: 22px;
+  --space-24: 24px;
+  --space-28: 28px;
+  --space-32: 32px;
+  --space-40: 40px;
+  --space-48: 48px;
+  --space-56: 56px;
+  --space-64: 64px;
+
+  /* ======================================================================
+     Tier 1 · 圆角刻度（Primitive Radius）
+     ====================================================================== */
+  --radius-2: 2px;
+  --radius-4: 4px;
+  --radius-8: 8px;
+  --radius-10: 10px;
+  --radius-12: 12px;
+  --radius-14: 14px;
+  --radius-16: 16px;
+  --radius-full: 999px;
+  --radius-circle: 50%;
+
+  /* ======================================================================
+     Tier 1 · 层级与动效（Primitive Elevation / Motion / Z-index）
+     ====================================================================== */
+  /* 灰色阴影（结构与悬浮） */
+  --shadow-1: 0 1px 2px rgba(20, 32, 51, .06), 0 1px 3px rgba(20, 32, 51, .04);
+  --shadow-2: 0 4px 16px rgba(20, 32, 51, .08);
+  --shadow-3: 0 12px 40px rgba(20, 32, 51, .16);
+  /* 品牌光晕（主按钮、选中态） */
+  --shadow-brand-sm: 0 2px 8px rgba(14, 159, 142, .28);
+  --shadow-brand-md: 0 3px 10px rgba(14, 159, 142, .35);
+  /* 焦点环 */
+  --shadow-focus: 0 0 0 3px rgba(14, 159, 142, .13);
+  /* 遮罩与玻璃层 */
+  --overlay-scrim: rgba(20, 32, 51, .42);
+  --overlay-scrim-strong: rgba(0, 0, 0, .55);
+  --overlay-glass: rgba(255, 255, 255, .92);
+  --overlay-glass-soft: rgba(255, 255, 255, .90);
+  --overlay-glass-soft2: rgba(255, 255, 255, .72);
+  --overlay-glass-line: rgba(255, 255, 255, .18);
+  --overlay-glass-faint: rgba(255, 255, 255, .10);
+  --overlay-glass-ghost: rgba(255, 255, 255, .08);
+  --overlay-brand: rgba(14, 159, 142, .92);   /* 轻提示气泡底色 */
+  --shadow-icon: drop-shadow(0 3px 6px rgba(0, 0, 0, .18));
+
+  /* 动效 */
+  --duration-instant: 0ms;
+  --duration-fast: 160ms;
+  --duration-normal: 200ms;
+  --duration-slow: 300ms;
+  --ease-standard: ease;
+  --ease-out: cubic-bezier(.2, .9, .3, 1.3);
+  --ease-in-out: cubic-bezier(.4, 0, .2, 1);
+
+  /* 层叠顺序 */
+  --z-raised: 1;
+  --z-sticky: 60;
+  --z-dropdown: 100;
+  --z-overlay: 150;
+  --z-toast: 200;
+
+  /* ======================================================================
+     Tier 2 · 语义层（Semantic）
+     产品代码只应引用这一层
+     ====================================================================== */
+
+  /* 背景 */
+  --color-bg-canvas: var(--slate-50);      /* 页面底色 */
+  --color-bg-surface: var(--slate-0);      /* 卡片 / 面板 */
+  --color-bg-subtle: var(--slate-25);      /* 表头、次级面板 */
+  --color-bg-muted: var(--slate-100);      /* 属性块、占位底 */
+  --color-bg-inverse: var(--slate-800);    /* 深色底（头像、图标块） */
+
+  /* 文本 */
+  --color-text-primary: var(--slate-800);
+  --color-text-secondary: var(--slate-600);
+  --color-text-tertiary: var(--slate-550);          /* 已修：原 #8a94a6 仅 3.06:1 */
+  --color-text-placeholder: var(--slate-400);       /* 已修：原 #b4bdc9 仅 1.90:1 */
+  --color-text-inverse: var(--slate-0);
+
+  /* 边框 */
+  --color-border-default: var(--slate-150);
+  --color-border-subtle: var(--slate-100);
+  --color-border-strong: var(--slate-300);
+  --color-border-interactive: var(--slate-400);     /* 表单控件边界，3.06:1 满足非文本 3:1 */
+
+  /* 品牌标识色 —— 仅用于 Logo、装饰图形等不承载文字的场景 */
+  --color-brand-identity: var(--teal-500);
+
+  /* 交互 · 主色（承载白色文字的动作底色已下调明度以满足 AA） */
+  --color-action-primary: var(--teal-600);
+  --color-action-primary-hover: var(--teal-700);
+  --color-action-primary-active: var(--teal-800);
+  --color-action-primary-subtle: var(--teal-50);
+  --color-action-primary-subtle-fg: var(--teal-700);  /* 浅青底上的强调文字 5.82:1 */
+  --color-action-primary-ring: var(--teal-500);
+
+  /* 交互 · 强调（价格 / 强调按钮） */
+  --color-action-accent: var(--orange-700);
+  --color-action-accent-hover: var(--orange-800);
+  --color-price: var(--red-650);                     /* 价格数字，5.54:1 */
+
+  /* 反馈 · 危险 */
+  --color-danger-fg: var(--red-700);
+  --color-danger: var(--red-600);
+  --color-danger-vivid: var(--red-500);
+  --color-danger-strong: var(--red-700);
+  --color-danger-bg: var(--red-50);
+  --color-danger-bg-soft: var(--red-25);
+  --color-danger-border: var(--red-300);
+  --color-danger-border-soft: var(--red-200);
+
+  /* 反馈 · 成功 */
+  --color-success-fg: var(--green-600);
+  --color-success: var(--green-500);
+  --color-success-bg: var(--green-50);
+  --color-success-bg-soft: var(--green-25);
+  --color-success-border: var(--green-200);
+
+  /* 反馈 · 警告 */
+  --color-warning-fg: var(--amber-700);
+  --color-warning: var(--amber-500);
+  --color-warning-bg: var(--amber-50);
+  --color-warning-bg-soft: var(--amber-25);
+  --color-warning-border: var(--amber-200);
+
+  /* 反馈 · 信息 */
+  --color-info-fg: var(--blue-600);      /* 已修：原 #3b6fd4 在浅蓝底上仅 4.20:1 */
+  --color-info: var(--blue-500);
+  --color-info-bg: var(--blue-50);
+  --color-info-border: var(--blue-200);
+
+  /* 评分（星标为图形元素，需满足非文本 3:1；空心星为装饰，不承载信息） */
+  --color-rating: var(--gold-600);
+  --color-rating-off: var(--slate-200);
+
+  /* ======================================================================
+     Tier 3 · 组件层（Component）
+     ====================================================================== */
+
+  /* 按钮 */
+  --button-radius: var(--radius-8);
+  --button-radius-sm: var(--radius-8);
+  --button-height-sm: 28px;
+  --button-font-size: var(--font-size-md);
+  --button-font-size-sm: var(--font-size-xs);
+
+  /* 表单控件 */
+  --input-radius: var(--radius-8);
+  --input-border: var(--color-border-interactive);
+  --input-border-focus: var(--color-action-primary);
+  --input-bg: var(--color-bg-surface);
+  --input-placeholder: var(--color-text-placeholder);
+  --input-height: 36px;
+
+  /* 按钮 —— 动作底色（白字均满足 AA 4.5:1） */
+  --button-primary-bg: var(--color-action-primary);
+  --button-primary-bg-hover: var(--color-action-primary-hover);
+  --button-accent-bg: var(--color-action-accent);
+  --button-accent-bg-hover: var(--color-action-accent-hover);
+  --button-danger-bg: var(--color-danger);
+  --button-danger-bg-hover: var(--color-danger-strong);
+  --button-ghost-border: var(--color-border-default);
+  --button-ghost-fg: var(--color-text-secondary);
+  --button-ghost-fg-hover: var(--color-action-primary-hover);
+  --button-ghost-border-hover: var(--color-action-primary-ring);
+  --button-ghost-bg-hover: var(--color-action-primary-subtle);
+
+  /* 卡片 */
+  --card-radius: var(--radius-14);
+  --card-bg: var(--color-bg-surface);
+  --card-border: var(--color-border-default);
+  --card-border-hover: var(--slate-250);
+  --card-shadow: var(--shadow-1);
+  --card-shadow-hover: var(--shadow-2);
+
+  /* 徽章 / 标签 */
+  --badge-radius: var(--radius-full);
+  --badge-font-size: var(--font-size-2xs);
+  --badge-font-size-lg: var(--font-size-xs);
+  --badge-padding-x: var(--space-10);
+  --badge-padding-y: var(--space-2);
+
+  /* 弹窗 */
+  --modal-radius: var(--radius-16);
+  --modal-shadow: var(--shadow-3);
+
+  /* 提示条 */
+  --toast-radius: var(--radius-12);
+  --toast-shadow: var(--shadow-3);
+
+  /* 顶栏 */
+  --topbar-height: 62px;
+  --topbar-bg: var(--overlay-glass);
+
+  /* 表格 */
+  --table-head-bg: var(--color-bg-subtle);
+  --table-row-hover: var(--color-bg-subtle);
+  --table-cell-padding-x: var(--space-14);
+  --table-cell-padding-y: var(--space-12);
+}
+
+/* ==========================================================================
+   文档说明：断点令牌（Breakpoint）
+   CSS 变量无法用于 @media 条件，故此处仅作声明式记录并与 tokens.json 保持一致，
+   产品样式表内直接使用像素字面量。
+     --bp-sm: 620px   手机
+     --bp-md: 900px   平板
+     --bp-lg: 1180px  桌面内容区最大宽度
+     --bp-xl: 1280px  宽屏
+   ========================================================================== */

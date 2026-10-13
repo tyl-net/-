@@ -1,0 +1,16 @@
+# 运行时数据（首次启动自动重建表结构与演示数据，不入库）
+data/
+
+# 依赖与日志（本项目零依赖，防御性声明）
+node_modules/
+*.log
+
+# 备份与临时文件
+*.bak
+*.tmp
+.DS_Store
+Thumbs.db
+
+# IDE / 工具私有目录
+.idea/
+.workbuddy/

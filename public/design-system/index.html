@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>校园集市 · 设计规范 v1.0.0</title>
+<meta name="description" content="校园二手交易平台设计规范：三层令牌体系、组件库全状态、无障碍与响应式标准。">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230e9f8e'/><text y='72' x='50' font-size='58' text-anchor='middle' fill='white' font-family='sans-serif'>集</text></svg>">
+<link rel="stylesheet" href="./system.css">
+</head>
+<body>
+
+<header class="spec-top">
+  <div class="spec-top-inner">
+    <div class="spec-brand">
+      <span class="spec-mark">集</span>
+      <span>校园集市 · 设计规范<small>Design System v1.0.0</small></span>
+    </div>
+    <div class="spec-top-actions">
+      <span class="spec-badge" id="badge-tokens">令牌 —</span>
+      <span class="spec-badge is-ok" id="badge-a11y">无障碍 —</span>
+      <a class="spec-badge" href="/" style="background:var(--color-bg-muted);color:var(--color-text-secondary);border-color:var(--color-border-default)">← 返回产品</a>
+    </div>
+  </div>
+</header>
+
+<div class="spec-shell">
+
+  <aside class="spec-nav">
+    <div class="spec-nav-title">规范目录</div>
+    <a href="#overview"><span class="num">01</span>概览</a>
+    <a href="#color"><span class="num">02</span>色彩</a>
+    <a href="#typography"><span class="num">03</span>字体排印</a>
+    <a href="#spacing"><span class="num">04</span>间距</a>
+    <a href="#radius"><span class="num">05</span>圆角</a>
+    <a href="#elevation"><span class="num">06</span>阴影与层级</a>
+    <a href="#motion"><span class="num">07</span>动效</a>
+    <a href="#components"><span class="num">08</span>组件</a>
+    <a href="#a11y"><span class="num">09</span>无障碍</a>
+    <a href="#responsive"><span class="num">10</span>响应式</a>
+    <a href="#tokens"><span class="num">11</span>令牌索引</a>
+  </aside>
+
+  <main class="spec-main">
+
+    <!-- ============ 01 概览 ============ -->
+    <section class="section" id="overview">
+      <div class="section-head">
+        <div class="section-kicker">01 / FOUNDATIONS</div>
+        <h2>三层令牌体系</h2>
+        <p class="section-desc">
+          全部设计取值收敛到唯一真源 <code>tokens.css</code>。产品样式表与规范站本身都只引用 <code>var()</code>，
+          源码中不再出现任何裸色值、裸字号、裸间距 —— 由 <code>test/design-lint.js</code> 自动断言。
+        </p>
+      </div>
+
+      <div class="panel">
+        <div class="tier-flow">
+          <div class="tier">
+            <span class="tier-tag">Tier 1</span>
+            <h4>基础层 Primitive</h4>
+            <p>与业务无关的原始色板与刻度：teal / slate / red … 色阶，字号、间距、圆角、阴影刻度。</p>
+          </div>
+          <div class="tier-arrow">→</div>
+          <div class="tier">
+            <span class="tier-tag">Tier 2</span>
+            <h4>语义层 Semantic</h4>
+            <p>描述“用途”的角色变量，如 <code>--color-action-primary</code>。<b>产品代码只应引用这一层。</b></p>
+          </div>
+          <div class="tier-arrow">→</div>
+          <div class="tier">
+            <span class="tier-tag">Tier 3</span>
+            <h4>组件层 Component</h4>
+            <p>组件专属别名，如 <code>--button-primary-bg</code>。改动一处即全局生效，便于单点微调。</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3 class="panel-title">体系现状</h3>
+        <p class="panel-note">数据由 <code>tools/export-tokens.mjs</code> 从 <code>tokens.css</code> 实时导出。</p>
+        <div class="stat-grid" id="stat-grid"></div>
+      </div>
+    </section>
+
+    <!-- ============ 02 色彩 ============ -->
+    <section class="section" id="color">
+      <div class="section-head">
+        <div class="section-kicker">02 / COLOR</div>
+        <h2>色彩</h2>
+        <p class="section-desc">
+          品牌青绿取自校园集市既有配色，向两端扩展为完整色阶。基础色板供语义层挑选；产品代码使用语义色，
+          因此换肤只需改语义层的指向。点击任意色块可复制令牌名。
+        </p>
+      </div>
+
+      <div class="panel">
+        <h3 class="panel-title">基础色板 · 主色（青绿）</h3>
+        <p class="panel-note">品牌主色 <code>--teal-500</code> 仅作标识与装饰；承载白色文字的动作底色使用 <code>--teal-600</code>，以满足 AA 对比度。</p>
+        <div id="ramp-teal"></div>
+      </div>
+
+      <div class="panel">
+        <h3 class="panel-title">基础色板 · 中性（灰蓝）</h3>
+        <p class="panel-note">文本、边框、背景的骨架色阶。</p>
+        <div id="ramp-slate"></div>
+      </div>
+
+      <div class="panel">
+        <h3 class="panel-title">基础色板 · 功能色</h3>
+        <p class="panel-note">每族色阶含“浅底 bg / 边框 border / 前景 fg / 实底 action”四种角色，语义层按角色取用。</p>
+        <div id="ramp-functional"></div>
+      </div>
+
+      <div class="panel">
+        <h3 class="panel-title">表达色 · 品类封面</h3>
+        <p class="panel-note">仅用于商品品类封面与头像的渐变，不作 UI 语义色。</p>
+        <div id="ramp-viz"></div>
+      </div>
+
+      <div class="panel">
+        <h3 class="panel-title">语义色 · 产品代码唯一入口</h3>
+        <p class="panel-note">卡片下方依次为：令牌名 / 解析后的最终色值 / 引用次数。带虚线标注的在当前产品中为预留。</p>
+        <div class="grid-3" id="semantic-grid"></div>
+      </div>
+    </section>
+
+    <!-- ============ 03 字体排印 ============ -->
+    <section class="section" id="typography">
+      <div class="section-head">
+        <div class="section-kicker">03 / TYPOGRAPHY</div>
+        <h2>字体排印</h2>
+        <p class="section-desc">
+          系统字体栈，无需加载外部字体即可获得跨平台一致的中文渲染；字号走 10 级刻度，正文 14px 为基准。
+        </p>
+      </div>
+
+      <div class="panel">
+        <h3 class="panel-title">字号刻度</h3>
+        <p class="panel-note">在下方输入文字，可实时预览全部字号下的实际效果。</p>
+        <input class="type-sample-input" id="type-input" value="校园集市 · 让闲置流动起来 Aa 123" aria-label="预览文字">
+        <div id="type-scale"></div>
+      </div>
+
+      <div class="panel">
+        <h3 class="panel-title">字重</h3>
+        <div class="wt-row" id="weight-row"></div>
+      </div>
+
+      <div class="grid-2">
+        <div class="panel">
+          <h3 class="panel-title">行高</h3>
+          <div id="line-height-list"></div>
+        </div>
+        <div class="panel">
+          <h3 class="panel-title">字距</h3>
+          <div id="letter-spacing-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 04 间距 ============ -->
+    <section class="section" id="spacing">
+      <div class="section-head">
+        <div class="section-kicker">04 / SPACING</div>
+        <h2>间距</h2>
+        <p class="section-desc">
+          刻度名即像素值（<code>--space-16</code> = 16px），便于在设计与代码之间直接对照；最小 1px，最大 64px，共 19 级。
+        </p>
+      </div>
+      <div class="panel">
+        <h3 class="panel-title">间距刻度</h3>
+        <div class="scale-list" id="spacing-list"></div>
+      </div>
+    </section>
+
+    <!-- ============ 05 圆角 ============ -->
+    <section class="section" id="radius">
+      <div class="section-head">
+        <div class="section-kicker">05 / RADIUS</div>
+        <h2>圆角</h2>
+        <p class="section-desc">从 2px 的细节点缀到 999px 的胶囊形，共 9 级；卡片 14px、弹窗 16px、按钮与输入框 8px。</p>
+      </div>
+      <div class="panel">
+        <div class="grid-3" id="radius-grid"></div>
+      </div>
+    </section>
+
+    <!-- ============ 06 阴影与层级 ============ -->
+    <section class="section" id="elevation">
+      <div class="section-head">
+        <div class="section-kicker">06 / ELEVATION</div>
+        <h2>阴影与层级</h2>
+        <p class="section-desc">三级中性阴影表达高度差，品牌光晕强调可交互的主动作，遮罩与玻璃层用于浮层。</p>
+      </div>
+      <div class="panel">
+        <h3 class="panel-title">阴影</h3>
+        <div class="grid-3" id="shadow-grid"></div>
+      </div>
+      <div class="panel">
+        <h3 class="panel-title">遮罩 / 玻璃层 / 层叠顺序</h3>
+        <div class="grid-2" id="overlay-grid"></div>
+        <div class="scale-list" id="z-list" style="margin-top:var(--space-16)"></div>
+      </div>
+    </section>
+
+    <!-- ============ 07 动效 ============ -->
+    <section class="section" id="motion">
+      <div class="section-head">
+        <div class="section-kicker">07 / MOTION</div>
+        <h2>动效</h2>
+        <p class="section-desc">
+          时长统一走 160 / 200 / 300ms 三档；缓动曲线中 <code>--ease-out</code> 略带回弹，用于浮层入场。
+          悬停右侧色块可观察三种缓动的差异。
+        </p>
+      </div>
+      <div class="panel">
+        <h3 class="panel-title">时长</h3>
+        <div id="duration-list"></div>
+      </div>
+      <div class="panel">
+        <h3 class="panel-title">缓动（悬停播放）</h3>
+        <div class="grid-3" id="ease-grid"></div>
+      </div>
+    </section>
+
+    <!-- ============ 08 组件 ============ -->
+    <section class="section" id="components">
+      <div class="section-head">
+        <div class="section-kicker">08 / COMPONENTS</div>
+        <h2>组件库</h2>
+        <p class="section-desc">
+          每个组件均列出全部交互状态：默认 / 悬停 / 聚焦 / 禁用。下方展示的样式与产品页面使用同一批令牌，
+          因此规范页即产品的真实外观，而非示意图。
+        </p>
+      </div>
+
+      <div class="panel">
+        <h3 class="panel-title">按钮 Button</h3>
+        <p class="panel-note">四种语义变体 × 全部状态。主按钮白字对比 4.82:1、强调按钮 5.18:1，均满足 AA。</p>
+        <div class="stage stage-col">
+          <span class="state-label">默认</span>
+          <div style="display:flex;gap:var(--space-12);flex-wrap:wrap;align-items:center">
+            <button class="demo-btn demo-btn--primary">发布商品</button>
+            <button class="demo-btn demo-btn--accent">立即购买</button>
+            <button class="demo-btn demo-btn--danger">删除</button>
+            <button class="demo-btn demo-btn--ghost">取消</button>
+            <button class="demo-btn demo-btn--primary demo-btn--sm">小尺寸</button>
+          </div>
+          <span class="state-label">悬停 Hover</span>
+          <div style="display:flex;gap:var(--space-12);flex-wrap:wrap;align-items:center">
+            <button class="demo-btn demo-btn--primary demo-btn--hover">发布商品</button>
+            <button class="demo-btn demo-btn--accent demo-btn--hover">立即购买</button>
+            <button class="demo-btn demo-btn--danger demo-btn--hover">删除</button>
+            <button class="demo-btn demo-btn--ghost demo-btn--hover">取消</button>
+          </div>
+          <span class="state-label">聚焦 Focus（键盘 Tab 可见）</span>
+          <div style="display:flex;gap:var(--space-12);flex-wrap:wrap;align-items:center">
+            <button class="demo-btn demo-btn--primary demo-btn--focus">发布商品</button>
+            <button class="demo-btn demo-btn--ghost demo-btn--focus">取消</button>
+          </div>
+          <span class="state-label">禁用 Disabled</span>
+          <div style="display:flex;gap:var(--space-12);flex-wrap:wrap;align-items:center">
+            <button class="demo-btn demo-btn--primary" disabled>发布商品</button>
+            <button class="demo-btn demo-btn--ghost" disabled>取消</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3 class="panel-title">表单控件 Form</h3>
+        <p class="panel-note">控件边界使用 <code>--input-border</code>（3.06:1，满足 WCAG 非文本 3:1）；聚焦时叠加 3px 品牌焦点环。</p>
+        <div class="stage">
+          <div class="field-demo">
+            <label>默认</label>
+            <input placeholder="请输入商品标题" value="">
+            <span class="hint">10 字以内效果最佳</span>
+          </div>
+          <div class="field-demo">
+            <label>已填写</label>
+            <input value="九成新 考研数学复习全书">
+          </div>
+          <div class="field-demo">
+            <label>下拉选择</label>
+            <select><option>教材书籍</option><option>电子数码</option></select>
+          </div>
+          <div class="field-demo is-error">
+            <label>错误状态</label>
+            <input value="0">
+            <span class="hint">价格必须大于 0</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3 class="panel-title">徽章 Badge</h3>
+        <div class="stage">
+          <span class="demo-badge">草稿</span>
+          <span class="demo-badge demo-badge--brand">在售</span>
+          <span class="demo-badge demo-badge--ok">已完成</span>
+          <span class="demo-badge demo-badge--warn">待付款</span>
+          <span class="demo-badge demo-badge--danger">已驳回</span>
+          <span class="demo-badge demo-badge--info">待审核</span>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3 class="panel-title">卡片 Card</h3>
+        <p class="panel-note">左为默认态，右为悬停态（上浮 2px + 阴影加深 + 边框提亮）。</p>
+        <div class="stage is-plain" style="align-items:stretch">
+          <div class="demo-card">
+            <h4>线性代数辅导书</h4>
+            <p style="margin:0 0 var(--space-10);color:var(--color-text-secondary);font-size:var(--font-size-sm)">九成新，无笔记，图书馆自提</p>
+            <span class="demo-price">¥ 28.00</span>
+          </div>
+          <div class="demo-card is-hover">
+            <h4>线性代数辅导书</h4>
+            <p style="margin:0 0 var(--space-10);color:var(--color-text-secondary);font-size:var(--font-size-sm)">九成新，无笔记，图书馆自提</p>
+            <span class="demo-price">¥ 28.00</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3 class="panel-title">反馈 Feedback</h3>
+        <div class="stage stage-col">
+          <div class="demo-toast demo-toast--success">✔ 商品已发布，等待审核</div>
+          <div class="demo-toast">✔ 已复制到剪贴板</div>
+          <div class="demo-toast demo-toast--warn">⚠ 图片超过 2MB，请压缩后重试</div>
+          <div class="demo-toast demo-toast--error">✕ 登录已过期，请重新登录</div>
+          <div class="demo-toast demo-toast--info">ℹ 平台将在 22:00 进行维护</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3 class="panel-title">数据展示 Data</h3>
+        <div class="stage stage-col is-plain">
+          <table class="demo-table">
+            <thead><tr><th>商品</th><th>品类</th><th>价格</th><th>状态</th></tr></thead>
+            <tbody>
+              <tr><td>线性代数辅导书</td><td>教材书籍</td><td><span class="demo-price" style="font-size:var(--font-size-md)">¥28.00</span></td><td><span class="demo-badge demo-badge--brand">在售</span></td></tr>
+              <tr><td>罗技 M590 静音鼠标</td><td>电子数码</td><td><span class="demo-price" style="font-size:var(--font-size-md)">¥89.00</span></td><td><span class="demo-badge demo-badge--ok">已售出</span></td></tr>
+              <tr><td>宜家台灯</td><td>生活用品</td><td><span class="demo-price" style="font-size:var(--font-size-md)">¥45.00</span></td><td><span class="demo-badge demo-badge--info">待审核</span></td></tr>
+            </tbody>
+          </table>
+          <div style="display:flex;gap:var(--space-20);flex-wrap:wrap;align-items:center;width:100%">
+            <span class="demo-avatar" style="background:var(--viz-digital-1)">谭</span>
+            <span class="demo-stars">★★★★<span class="off">★</span></span>
+            <span class="demo-clamp">4.8 分 · 23 条评价</span>
+            <span class="demo-pager"><button>‹</button><button class="is-on">1</button><button>2</button><button>3</button><button>›</button></span>
+          </div>
+          <div style="width:100%;max-width:420px;display:flex;flex-direction:column;gap:var(--space-8)">
+            <div class="demo-skeleton" style="width:70%"></div>
+            <div class="demo-skeleton" style="width:92%"></div>
+            <div class="demo-skeleton" style="width:52%"></div>
+          </div>
+          <div class="demo-empty" style="width:100%;border:1px dashed var(--color-border-strong);border-radius:var(--radius-12)">
+            <b>🗒</b>还没有发布过商品<br><span style="font-size:var(--font-size-xs)">点击右上角「发布商品」开始你的第一笔交易</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 09 无障碍 ============ -->
+    <section class="section" id="a11y">
+      <div class="section-head">
+        <div class="section-kicker">09 / ACCESSIBILITY</div>
+        <h2>无障碍</h2>
+        <p class="section-desc">
+          以 WCAG 2.1 AA 为基线：正文对比度 ≥ 4.5:1，大号文本与图形边界 ≥ 3:1。
+          组合由 <code>test/contrast-audit.js</code> 按相对亮度公式实算，结果直接驱动下方渲染。
+        </p>
+      </div>
+
+      <div class="panel">
+        <h3 class="panel-title">对比度计算器</h3>
+        <p class="panel-note">任选前景与背景令牌，实时按 WCAG 公式计算。</p>
+        <div class="calc">
+          <div><label for="calc-fg">前景（文字）</label><select id="calc-fg"></select></div>
+          <div><label for="calc-bg">背景</label><select id="calc-bg"></select></div>
+        </div>
+        <div class="calc-preview" id="calc-preview">校园集市 Campus Market</div>
+        <div class="calc-result">
+          <div class="calc-score" id="calc-score">–</div>
+          <div>
+            <div style="font-size:var(--font-size-xs);color:var(--color-text-tertiary)">对比度（WCAG 2.1）</div>
+            <div style="font-size:var(--font-size-sm);font-weight:var(--font-weight-semibold)" id="calc-hex">—</div>
+          </div>
+          <div class="calc-verdicts" id="calc-verdicts"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3 class="panel-title">已审计的关键组合</h3>
+        <p class="panel-note" id="contrast-summary">加载中…</p>
+        <div class="panel is-scroll" style="padding:0;border:none;box-shadow:none">
+          <table class="contrast-table" id="contrast-table"></table>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="panel">
+          <h3 class="panel-title">焦点可见性</h3>
+          <p class="panel-note">所有可聚焦元素在键盘导航下必须显示焦点环，且焦点环与背景对比 ≥ 3:1。</p>
+          <div class="stage">
+            <button class="demo-btn demo-btn--primary demo-btn--focus">聚焦态示例</button>
+            <input style="max-width:200px" placeholder="Tab 键试试">
+          </div>
+        </div>
+        <div class="panel">
+          <h3 class="panel-title">触控与动态</h3>
+          <ul style="margin:0;padding-left:var(--space-20);color:var(--color-text-secondary);font-size:var(--font-size-sm);line-height:var(--line-height-relaxed)">
+            <li>可点击元素最小高度 30px，移动端主操作区 ≥ 44px</li>
+            <li>重要操作提供二次确认，破坏性操作使用 <code>--button-danger-bg</code> 区分语义</li>
+            <li>动效时长 ≤ 300ms，不依赖动画传达关键信息</li>
+            <li>文本在 200% 缩放下不出现横向滚动（见 10 响应式）</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 10 响应式 ============ -->
+    <section class="section" id="responsive">
+      <div class="section-head">
+        <div class="section-kicker">10 / RESPONSIVE</div>
+        <h2>响应式</h2>
+        <p class="section-desc">
+          移动优先，四个断点。CSS 变量无法参与 <code>@media</code> 条件，故断点以声明式记录在
+          <code>tokens.css</code> 与 <code>tokens.json</code> 中，产品样式表内直接使用像素字面量。
+        </p>
+      </div>
+      <div class="panel">
+        <h3 class="panel-title">断点</h3>
+        <div id="bp-list"></div>
+      </div>
+      <div class="panel">
+        <h3 class="panel-title">产品实景预览</h3>
+        <p class="panel-note">下方为真实产品页面，切换宽度可查看各断点下的布局变化。</p>
+        <div class="viewport-bar">
+          <button data-w="390">手机 390</button>
+          <button data-w="768">平板 768</button>
+          <button data-w="1180" class="is-on">桌面 1180</button>
+          <button data-w="0">自适应</button>
+          <span class="dim" id="viewport-dim">1180 px</span>
+        </div>
+        <div class="viewport-frame" id="viewport-frame">
+          <iframe src="/" title="产品实景预览"></iframe>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 11 令牌索引 ============ -->
+    <section class="section" id="tokens">
+      <div class="section-head">
+        <div class="section-kicker">11 / REFERENCE</div>
+        <h2>令牌索引</h2>
+        <p class="section-desc">
+          全部令牌的唯一清单，来源 <code>tokens.css</code>。点击任意行复制 <code>var(--name)</code>；
+          “引用”列统计该令牌在产品源码中被使用的次数。
+        </p>
+      </div>
+      <div class="panel">
+        <div class="token-toolbar">
+          <input id="token-search" placeholder="搜索令牌名 / 色值 / 用途，如 teal、radius、#0b8174" aria-label="搜索令牌">
+          <div class="seg" id="token-seg">
+            <button data-tier="all" class="is-on">全部</button>
+            <button data-tier="1">Tier 1</button>
+            <button data-tier="2">Tier 2</button>
+            <button data-tier="3">Tier 3</button>
+            <button data-tier="active">已启用</button>
+          </div>
+        </div>
+        <div class="panel is-scroll" style="padding:0;border:none;box-shadow:none">
+          <table class="token-table" id="token-table"></table>
+        </div>
+        <p class="panel-note" id="token-count" style="margin-top:var(--space-12)"></p>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="spec-foot">
+  <span>校园集市 · 设计规范 v1.0.0</span>
+  <span>·</span>
+  <span>令牌真源 <code>public/design-system/tokens.css</code></span>
+  <span>·</span>
+  <span>一致性由 <code>test/design-lint.js</code> 断言，对比度由 <code>test/contrast-audit.js</code> 实算</span>
+</footer>
+
+<div class="copy-hint" id="copy-hint"></div>
+<script type="module" src="./system.js"></script>
+</body>
+</html>
