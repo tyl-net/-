@@ -312,6 +312,37 @@ export async function renderReports(root) {
 }
 
 // ---------------- 审计日志 ----------------
+// 审计动作中文对照：动作列展示中文，原始代码保留为悬停提示与灰色小字，便于追溯
+const ACTION_LABELS = {
+  LOGIN: '登录',
+  ADMIN_LOGIN: '管理员登录',
+  LOGIN_LOCK: '登录锁定',
+  REGISTER: '注册账号',
+  CHANGE_PASSWORD: '修改密码',
+  VERIFY_SUBMIT: '提交实名认证',
+  VERIFY_PASS: '实名复核通过',
+  VERIFY_REJECT: '实名复核驳回',
+  GOODS_PUBLISH: '发布商品',
+  GOODS_AUDIT: '商品审核',
+  GOODS_OFFLINE: '强制下架',
+  GOODS_DELETE: '删除商品',
+  ORDER_CREATE: '创建订单',
+  ORDER_PAY: '支付订单',
+  ORDER_SHIP: '卖家发货',
+  ORDER_CONFIRM: '确认收货',
+  ORDER_SETTLE: '货款结算',
+  ORDER_CANCEL: '取消订单',
+  REVIEW_CREATE: '发表评价',
+  REVIEW_ADDITIONAL: '追加评价',
+  REPORT: '提交举报',
+  REPORT_HANDLE: '处理举报',
+  ANN_PUBLISH: '发布公告',
+  ANN_ON: '上架公告',
+  ANN_OFF: '下架公告',
+  USER_ENABLE: '启用账号',
+  USER_DISABLE: '禁用账号',
+};
+
 export async function renderLogs(root) {
   const listBox = h('div', {}, loading());
   root.append(TITLE('审计日志', '记录关键操作（登录、发布、审核、下单、结算等），供安全审计追溯'), h('div', { class: 'card' }, listBox));
@@ -334,7 +365,9 @@ export async function renderLogs(root) {
                   : '#' + (l.actor_id ?? '—'),
               })
             : null),
-        h('td', { class: 'cell-strong' }, l.action),
+        h('td', {},
+          h('span', { class: 'cell-strong', title: l.action, text: ACTION_LABELS[l.action] || l.action }),
+          ACTION_LABELS[l.action] ? h('span', { class: 'cell-sub', style: { marginLeft: 'var(--space-6)' }, text: l.action }) : null),
         h('td', { class: 'cell-sub' }, l.detail || '—')
       )))
     )));
