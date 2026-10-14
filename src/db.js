@@ -8,7 +8,9 @@ import { fileURLToPath } from 'node:url';
 import { hashPassword } from './auth.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DATA_DIR = path.join(__dirname, '..', 'data');
+// 数据库放在项目目录之外（工作区 .data/）：部署只上传代码、不携带运行数据，
+// 避免"本地测试数据随发布覆盖线上"；可用 DB_DATA_DIR 环境变量覆盖。
+const DATA_DIR = process.env.DB_DATA_DIR || path.join(__dirname, '..', '..', '.data');
 
 /** 打开数据库：优先落盘 SQLite；只读/受限环境自动回退到内存库，保证仍可运行 */
 function openDatabase() {
@@ -156,6 +158,9 @@ ensureColumn('t_order', 'cancel_by', 'cancel_by INTEGER');
 // 追加评价（v1.1）：评价发表后可补充一次使用感受，限一次
 ensureColumn('t_review', 'additional', 'additional VARCHAR(500)');
 ensureColumn('t_review', 'additional_at', 'additional_at DATETIME');
+
+// 数据修复（v1.1.1）：头像功能联调期间演示账号昵称被测试脚本误改，此处幂等修正
+db.prepare("UPDATE t_user SET nickname='李思远', avatar='李' WHERE student_no='241603010301' AND nickname<>'李思远'").run();
 
 // 商品类别（与前端下拉一致）
 export const CATEGORIES = ['教材书籍', '电子数码', '生活用品', '体育运动', '服饰美妆', '其他'];

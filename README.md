@@ -15,8 +15,8 @@ npm start            # 等价于 node --no-warnings server.js
 
 Windows 用户也可双击 **`启动.bat`**。
 
-首次启动会自动创建 SQLite 数据库 `app/data/market.db` 并灌入演示数据。
-如需重置为初始状态：删除 `data/market.db*` 后重启即可。
+首次启动会自动创建 SQLite 数据库 `工作区/.data/market.db`（在项目目录**之外**，部署时不会随代码上传）并灌入演示数据。
+如需重置为初始状态：`npm run reset`（或手动删除 `.data/market.db*`）后重启即可。
 
 ### 演示账号（密码均为 `123456`）
 
@@ -79,7 +79,7 @@ app/
 ├── test/
 │   ├── smoke.js              # 全链路接口冒烟测试（39 项断言）
 │   └── scan.js               # 括号平衡自检脚本
-└── data/market.db            # SQLite 数据库（自动生成）
+└── (运行数据在项目外的 .data/ 目录，自动生成、不入库不上传)
 ```
 
 ### 安全设计落地

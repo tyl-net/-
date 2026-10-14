@@ -7,7 +7,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node --no-warnings server.js",
-    "reset": "node --no-warnings -e \"import('node:fs').then(fs=>fs.rmSync('data/market.db',{force:true}))\"",
+    "reset": "node --no-warnings -e \"import('node:fs').then(fs=>{for(const f of ['market.db','market.db-shm','market.db-wal']) fs.rmSync('../.data/'+f,{force:true});console.log('已清除数据库，下次启动自动重建');})\"",
     "tokens": "node tools/export-tokens.mjs",
     "audit:contrast": "node test/contrast-audit.js",
     "lint:design": "node test/design-lint.js",

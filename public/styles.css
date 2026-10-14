@@ -140,13 +140,16 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; }
 }
 .avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .avatar-wrap { position: relative; flex-shrink: 0; }
+/* 更换头像：悬停时整圆覆盖半透明遮罩，与头像同形 */
 .avatar-edit {
-  position: absolute; right: -6px; bottom: -6px; width: 26px; height: 26px; border-radius: var(--radius-full);
-  border: 2px solid var(--color-bg-surface); background: var(--color-action-primary); color: var(--color-text-inverse);
-  font-size: var(--font-size-xs); line-height: var(--line-height-none); cursor: pointer; display: grid; place-items: center;
-  transition: var(--duration-fast) var(--ease-standard);
+  position: absolute; inset: 0; width: 100%; height: 100%; border: none; border-radius: var(--radius-circle);
+  background: var(--overlay-scrim); color: var(--color-text-inverse);
+  font-size: var(--font-size-2xs); font-weight: var(--font-weight-semibold); line-height: var(--line-height-snug);
+  cursor: pointer; opacity: 0; transition: opacity var(--duration-fast) var(--ease-standard);
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-end; padding-bottom: var(--space-8);
 }
-.avatar-edit:hover { background: var(--color-action-primary-hover); }
+.avatar-edit:hover, .avatar-edit:focus-visible { opacity: 1; }
+.avatar-edit .icon { font-size: var(--font-size-lg); line-height: var(--line-height-none); }
 .stars { color: var(--color-rating); letter-spacing: 1px; font-size: var(--font-size-sm); }
 .star-off { color: var(--color-rating-off); }
 

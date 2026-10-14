@@ -100,26 +100,34 @@ export function registerUser(router) {
     return ok(res, { user: publicUser(u), stat });
   });
 
-  // 修改个人资料（avatar 仅在传入时更新，避免未带头像的编辑把已上传头像重置为首字）
+  // 修改个人资料：字段均可选，仅更新传入的字段（未传 avatar 不影响已上传头像）
   router.put('/api/user/profile', async (req, res, body) => {
     const me = requireUser(req);
-    const nickname = String(body.nickname || '').trim();
-    const phone = String(body.phone || '').trim();
-    const email = String(body.email || '').trim();
-    const avatar = String(body.avatar || '').trim();
-    if (nickname && (nickname.length < 2 || nickname.length > 20)) throw bad('昵称长度应为 2~20 个字符');
-    if (phone && !/^1\d{10}$/.test(phone)) throw bad('手机号格式不正确');
-    if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) throw bad('邮箱格式不正确');
-    if (avatar && avatar.length > 500_000) throw bad('头像图片过大，请压缩后重试');
-    const cur = db.prepare('SELECT avatar FROM t_user WHERE user_id=?').get(me.sub);
-    const nextAvatar = avatar || (cur && cur.avatar) || nickname.slice(0, 1) || '用';
-    db.prepare('UPDATE t_user SET nickname=?, phone=?, email=?, avatar=? WHERE user_id=?').run(
-      nickname,
-      phone || null,
-      email || null,
-      nextAvatar,
-      me.sub
-    );
+    const sets = [];
+    const args = [];
+    if (body.nickname !== undefined) {
+      const nickname = String(body.nickname || '').trim();
+      if (nickname.length < 2 || nickname.length > 20) throw bad('昵称长度应为 2~20 个字符');
+      sets.push('nickname=?'); args.push(nickname);
+    }
+    if (body.phone !== undefined) {
+      const phone = String(body.phone || '').trim();
+      if (phone && !/^1\d{10}$/.test(phone)) throw bad('手机号格式不正确');
+      sets.push('phone=?'); args.push(phone || null);
+    }
+    if (body.email !== undefined) {
+      const email = String(body.email || '').trim();
+      if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) throw bad('邮箱格式不正确');
+      sets.push('email=?'); args.push(email || null);
+    }
+    if (body.avatar !== undefined && String(body.avatar || '').trim() !== '') {
+      const avatar = String(body.avatar).trim();
+      if (avatar.length > 500_000) throw bad('头像图片过大，请压缩后重试');
+      sets.push('avatar=?'); args.push(avatar);
+    }
+    if (!sets.length) throw bad('没有需要更新的内容');
+    args.push(me.sub);
+    db.prepare(`UPDATE t_user SET ${sets.join(', ')} WHERE user_id=?`).run(...args);
     const u = db.prepare('SELECT * FROM t_user WHERE user_id=?').get(me.sub);
     return ok(res, { user: publicUser(u) }, '资料已更新');
   });
