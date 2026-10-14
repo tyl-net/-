@@ -1,6 +1,6 @@
 // 评价中心：我发出的评价 / 我收到的评价（含卖家回复）
 import { api } from '../api.js';
-import { h, toast, badge, empty, loading, stars, avatar, timeAgo, formDialog, confirmDialog } from '../ui.js';
+import { h, toast, badge, empty, loading, stars, avatar, timeAgo, formDialog, confirmDialog, cover } from '../ui.js';
 import { go } from '../app.js';
 
 export async function render(root) {
@@ -51,6 +51,16 @@ export async function render(root) {
     }
     actions.append(h('button', { class: 'btn btn-ghost btn-sm', text: '查看商品', onClick: () => go('#/goods/' + r.goods_id) }));
 
+    // 商品卡片：封面缩略图 + 标题，整行可点击直达商品详情
+    const goodsRow = h('div', { class: 'review-goods', title: '查看商品详情', onClick: () => go('#/goods/' + r.goods_id) },
+      h('div', { class: 'review-goods-thumb' },
+        cover({ title: r.goods_title, images: r.goods_images, category: r.goods_category }, { height: 56 })),
+      h('div', { class: 'review-goods-info' },
+        h('div', { class: 'review-goods-title', text: r.goods_title }),
+        h('div', { class: 'small muted', text: r.goods_category })
+      )
+    );
+
     return h('div', { class: 'review-item' },
       h('div', { class: 'review-head' },
         avatar(who, 34),
@@ -60,7 +70,7 @@ export async function render(root) {
         ),
         h('span', { class: 'review-time', text: timeAgo(r.created_at) })
       ),
-      h('div', { class: 'small muted', style: { marginBottom: 'var(--space-6)' } }, '商品：', r.goods_title),
+      goodsRow,
       r.content ? h('div', { class: 'review-content', text: r.content }) : h('div', { class: 'muted small', text: '（买家未填写文字评价）' }),
       r.additional
         ? h('div', { class: 'review-additional' },

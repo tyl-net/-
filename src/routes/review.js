@@ -88,14 +88,16 @@ export function registerReview(router) {
       role === 'received'
         ? db
             .prepare(
-              `SELECT r.*, g.title AS goods_title, u.nickname AS buyer_name, u.avatar AS buyer_avatar
+              `SELECT r.*, g.title AS goods_title, g.images AS goods_images, g.category AS goods_category,
+                      u.nickname AS buyer_name, u.avatar AS buyer_avatar
                FROM t_review r JOIN t_goods g ON r.goods_id=g.goods_id JOIN t_user u ON r.user_id=u.user_id
                WHERE g.seller_id=? ORDER BY r.review_id DESC`
             )
             .all(me.sub)
         : db
             .prepare(
-              `SELECT r.*, g.title AS goods_title, g.seller_id, us.nickname AS seller_name
+              `SELECT r.*, g.title AS goods_title, g.images AS goods_images, g.category AS goods_category,
+                      g.seller_id, us.nickname AS seller_name
                FROM t_review r JOIN t_goods g ON r.goods_id=g.goods_id JOIN t_user us ON g.seller_id=us.user_id
                WHERE r.user_id=? ORDER BY r.review_id DESC`
             )
