@@ -202,8 +202,8 @@ const run = async () => {
     const BT = buyer.data.token;
     await loginAs(BT, { ...buyer.data.user, type: 'user' }, '#/home');
     await waitCards();
-    t = await waitText('在售商品');
-    check('集市首页渲染', t.includes('二手集市') && t.includes('在售商品'));
+    t = await waitText('二手集市');
+    check('集市首页渲染', t.includes('二手集市') && t.includes('搜索'));
     check('商品卡片加载', /¥\d+\.\d{2}/.test(t), (t.match(/¥[\d.]+/g) || []).slice(0, 3).join(' '));
     check('分类筛选条渲染', t.includes('教材书籍') && t.includes('电子数码'));
     check('公告展示', t.includes('公告') || t.includes('公约') || t.includes('专场'));

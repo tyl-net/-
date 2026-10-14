@@ -56,7 +56,7 @@ router.get('/api/diagnostics', async (req, res) => {
   });
 });
 
-// 平台公开统计（首页展示）
+// 平台公开统计（预留接口：集市首页已不再展示运营数据，运营数据在管理员「数据看板」查看）
 router.get('/api/stats/overview', async (req, res) => {
   const one = (sql) => Number(db.prepare(sql).get().v || 0);
   return ok(res, {

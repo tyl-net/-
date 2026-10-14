@@ -7,7 +7,6 @@ import { go, META } from '../app.js';
 export async function render(root) {
   const state = { page: 1, size: 8, category: '', keyword: '', minPrice: '', maxPrice: '', total: 0, list: [] };
 
-  const overview = h('div', { class: 'stat-grid', style: { marginBottom: 'var(--space-18)' } });
   const annBox = h('div', { style: { marginBottom: 'var(--space-18)' } });
   const chips = h('div', { class: 'chips' });
   const grid = h('div', { class: 'goods-grid' });
@@ -32,7 +31,7 @@ export async function render(root) {
         ? h('span', { class: 'badge badge-muted', text: '管理员浏览模式 · 不参与发布与交易' })
         : h('button', { class: 'btn btn-primary', text: '＋ 发布闲置', onClick: () => go('#/publish') })
     ),
-    overview, annBox,
+    annBox,
     h('div', { class: 'card' },
       h('div', { class: 'toolbar' },
         h('div', { class: 'search-box' }, kw, h('button', { class: 'btn btn-primary', text: '搜索', onClick: search })),
@@ -54,18 +53,10 @@ export async function render(root) {
     );
   }
 
-  async function loadOverview() {
+  // 集市页只展示对买家有用的信息（公告）；平台运营统计在管理员「数据看板」查看
+  async function loadAnnouncements() {
     try {
-      const [ov, ann] = await Promise.all([
-        api.get('/api/stats/overview', { auth: false }),
-        api.get('/api/announcements', { auth: false }),
-      ]);
-      overview.replaceChildren(
-        stat('在售商品', ov.goodsOnSale, 'brand'),
-        stat('注册用户', ov.userTotal, ''),
-        stat('累计成交', ov.orderDone, 'accent'),
-        stat('累计成交额', '¥' + Number(ov.gmv).toFixed(0), 'danger')
-      );
+      const ann = await api.get('/api/announcements', { auth: false });
       annBox.replaceChildren(
         ann.list.length
           ? h('div', { class: 'ann-list' }, ...ann.list.slice(0, 3).map((a) =>
@@ -73,10 +64,6 @@ export async function render(root) {
           : null
       );
     } catch {}
-  }
-
-  function stat(label, value, cls) {
-    return h('div', { class: 'stat' }, h('div', { class: 'stat-label', text: label }), h('div', { class: `stat-value ${cls}`, text: value }));
   }
 
   async function load() {
@@ -134,7 +121,7 @@ export async function render(root) {
   }
 
   drawChips();
-  loadOverview();
+  loadAnnouncements();
   load();
 }
 
