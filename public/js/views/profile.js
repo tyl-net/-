@@ -72,7 +72,7 @@ export async function render(root) {
         const dataURI = await fileToAvatarDataURI(file, 256);
         const res = await api.put('/api/user/profile', { avatar: dataURI });
         const cur = session.user;
-        session.save(session.token, { ...cur, avatar: res.user.avatar }, cur.type);
+        session.saveUser(session.token, { ...cur, avatar: res.user.avatar });
         toast('头像已更新', 'success');
         rerender();
       } catch (e) { toast(e.message, 'error'); }
@@ -94,7 +94,7 @@ export async function render(root) {
     try {
       const res = await api.put('/api/user/profile', r);
       // 同步本地会话并整页重渲染：顶栏昵称/头像即时更新，无需手动刷新
-      const cur = session.user; session.save(session.token, { ...cur, ...res.user }, cur.type);
+      const cur = session.user; session.saveUser(session.token, { ...cur, ...res.user });
       toast('资料已更新', 'success');
       rerender();
     } catch (e) { toast(e.message, 'error'); }
@@ -114,7 +114,7 @@ export async function render(root) {
     try {
       await api.post('/api/user/password', { old_password: r.old_password, new_password: r.new_password });
       toast('密码修改成功，请重新登录', 'success');
-      setTimeout(() => { session.clear(); window.location.hash = '#/login'; }, 900);
+      setTimeout(() => { session.clearUser(); window.location.hash = '#/login'; }, 900);
     } catch (e) { toast(e.message, 'error'); }
   }
 }

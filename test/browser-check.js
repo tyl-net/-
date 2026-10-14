@@ -164,12 +164,15 @@ const run = async () => {
       await waitRender();
       if (waitMs) await sleep(waitMs);
     };
-    /** 切换登录态：写入 localStorage 后强制整页重载，确保按新身份渲染 */
+    /** 切换登录态：写入对应存储（管理员→sessionStorage 本标签页；学生→localStorage）后强制整页重载 */
     const loginAs = async (token, user, hash, waitMs = 300) => {
-      await cdp.eval(
-        `localStorage.setItem('cm_token', ${JSON.stringify(token)});` +
-        `localStorage.setItem('cm_user', ${JSON.stringify(JSON.stringify(user))}); 'ok'`
-      );
+      const admin = user.type === 'admin';
+      const script = admin
+        ? `sessionStorage.setItem('cm_admin_token', ${JSON.stringify(token)});` +
+          `sessionStorage.setItem('cm_admin', ${JSON.stringify(JSON.stringify(user))}); 'ok'`
+        : `localStorage.setItem('cm_token', ${JSON.stringify(token)});` +
+          `localStorage.setItem('cm_user', ${JSON.stringify(JSON.stringify(user))}); 'ok'`;
+      await cdp.eval(script);
       await cdp.send('Page.navigate', { url: BASE + '/' + (hash || '') });
       await sleep(250);
       await cdp.send('Page.reload', {});
@@ -388,10 +391,13 @@ const run = async () => {
     t = await text();
     check('普通用户被拦截管理后台', t.includes('需要管理员权限'));
 
-    // ---------- 12. 管理员登录 → 各后台页面 ----------
+    // ---------- 12. 管理员登录（双会话：不影响同浏览器的学生登录） → 各后台页面 ----------
+    const studentTokenBefore = await cdp.eval(`localStorage.getItem('cm_token')`);
     const admin = await api('/api/admin/login', { method: 'POST', body: { account: 'admin', password: '123456' } });
     const AT = admin.data.token;
     await loginAs(AT, { ...admin.data.admin, type: 'admin' }, '#/admin');
+    check('双会话互不干扰：学生登录态仍在', (await cdp.eval(`localStorage.getItem('cm_token')`)) === studentTokenBefore);
+    check('管理员会话写入本标签页', (await cdp.eval(`!!sessionStorage.getItem('cm_admin_token')`)));
     t = await waitText('累计成交额');
     check('数据看板渲染', t.includes('数据看板') && t.includes('累计成交额'));
     check('统计卡片有数值', /注册用户/.test(t) && /\d/.test(t));

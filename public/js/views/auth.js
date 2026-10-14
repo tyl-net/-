@@ -4,7 +4,10 @@ import { h, toast } from '../ui.js';
 
 export function render() {
   let tab = 'login';       // login | register
-  let role = 'user';       // user | admin
+  // 预选身份：从「管理后台」入口进入时直接选中管理员页签（一次性提示）
+  const hint = sessionStorage.getItem('cm_login_role');
+  let role = hint === 'admin' ? 'admin' : 'user';
+  sessionStorage.removeItem('cm_login_role');
 
   const panel = h('div', { class: 'auth-box' });
   const wrap = h('div', { class: 'auth-wrap' },

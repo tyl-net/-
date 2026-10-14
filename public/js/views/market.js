@@ -27,9 +27,10 @@ export async function render(root) {
   root.append(
     h('div', { class: 'page-head' },
       h('div', {}, h('h1', { class: 'page-title', text: '二手集市' }), h('p', { class: 'page-desc', text: '浏览校园内在售的闲置好物，支持关键词、类别与价格区间组合检索' })),
-      session.user?.type === 'admin'
-        ? h('span', { class: 'badge badge-muted', text: '管理员浏览模式 · 不参与发布与交易' })
-        : h('button', { class: 'btn btn-primary', text: '＋ 发布闲置', onClick: () => go('#/publish') })
+      // 管理员身份（只读浏览）不显示发布入口；学生身份才可发布
+      session.user
+        ? h('button', { class: 'btn btn-primary', text: '＋ 发布闲置', onClick: () => go('#/publish') })
+        : h('span', { class: 'badge badge-muted', text: '管理员浏览模式 · 不参与发布与交易' })
     ),
     annBox,
     h('div', { class: 'card' },
@@ -138,12 +139,14 @@ export async function renderDetail(root, params) {
   }
   const g = data.goods;
   const me = session.user;
+  const adminBrowsing = !me && !!session.admin; // 管理员只读浏览
   const mine = me && me.type === 'user' && me.user_id === g.seller_id;
-  const canBuy = g.audit_status === 1 && g.goods_status === 1 && !mine;
+  const canBuy = g.audit_status === 1 && g.goods_status === 1 && !mine && !adminBrowsing;
 
   const buyBtn = h('button', { class: 'btn btn-primary', style: { padding: 'var(--space-12) var(--space-32)', fontSize: 'var(--font-size-lg)' }, text: '立即购买' });
   buyBtn.disabled = !canBuy;
   if (canBuy) buyBtn.onclick = () => placeOrder(g);
+  else if (adminBrowsing) { buyBtn.textContent = '管理员账号不可购买'; buyBtn.className = 'btn btn-ghost'; }
   else if (mine) { buyBtn.textContent = '这是我发布的商品'; buyBtn.className = 'btn btn-ghost'; }
   else if (g.goods_status === 2) { buyBtn.textContent = '已售出'; buyBtn.className = 'btn btn-ghost'; }
   else if (g.goods_status === 0) { buyBtn.textContent = '已下架'; buyBtn.className = 'btn btn-ghost'; }

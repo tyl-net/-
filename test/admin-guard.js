@@ -99,7 +99,8 @@ try {
   await send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
   await send('Page.navigate', { url: BASE + '/' });
   await sleep(800);
-  await evaluate(`localStorage.setItem('cm_token', ${JSON.stringify(at)});localStorage.setItem('cm_user', ${JSON.stringify(JSON.stringify({ ...adminLogin.data.admin, type: 'admin' }))});'ok'`);
+  // v1.2 双会话：管理员身份存于本标签页的 sessionStorage
+  await evaluate(`sessionStorage.setItem('cm_admin_token', ${JSON.stringify(at)});sessionStorage.setItem('cm_admin', ${JSON.stringify(JSON.stringify({ ...adminLogin.data.admin, type: 'admin' }))});'ok'`);
 
   // 直接复现原始路径：集市 → 发布闲置
   await send('Page.navigate', { url: BASE + '/#/home' });
@@ -116,7 +117,7 @@ try {
   await sleep(1100);
   const pub = await evaluate(`({
     hash: location.hash,
-    token: !!localStorage.getItem('cm_token'),
+    token: !!sessionStorage.getItem('cm_admin_token'),
     guard: (document.getElementById('app')||{}).innerText?.includes('该页面面向学生用户'),
     noVerifyBtn: ![...document.querySelectorAll('button')].find(b => b.textContent.trim() === '去认证'),
   })`);
@@ -130,7 +131,7 @@ try {
   await send('Page.navigate', { url: BASE + '/#/profile' });
   await sleep(1100);
   const prof = await evaluate(`({
-    token: !!localStorage.getItem('cm_token'),
+    token: !!sessionStorage.getItem('cm_admin_token'),
     guard: (document.getElementById('app')||{}).innerText?.includes('该页面面向学生用户'),
   })`);
   check('管理员访问个人中心 → 同样守卫', prof.guard);
