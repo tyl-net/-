@@ -1,7 +1,7 @@
 // 个人中心：资料维护、实名认证、修改密码
 import { api, session } from '../api.js';
 import { h, toast, badge, avatar, stars, timeAgo, empty, loading, formDialog, confirmDialog, fileToAvatarDataURI } from '../ui.js';
-import { go } from '../app.js';
+import { go, rerender } from '../app.js';
 
 export async function render(root) {
   root.replaceChildren(loading());
@@ -74,7 +74,7 @@ export async function render(root) {
         const cur = session.user;
         session.save(session.token, { ...cur, avatar: res.user.avatar }, cur.type);
         toast('头像已更新', 'success');
-        reload();
+        rerender();
       } catch (e) { toast(e.message, 'error'); }
     };
     input.click();
@@ -93,10 +93,10 @@ export async function render(root) {
     if (!r) return;
     try {
       const res = await api.put('/api/user/profile', r);
-      // 同步本地会话
-      const cur = session.user; session.save(session.token, { ...cur, ...res.user }, 'user');
+      // 同步本地会话并整页重渲染：顶栏昵称/头像即时更新，无需手动刷新
+      const cur = session.user; session.save(session.token, { ...cur, ...res.user }, cur.type);
       toast('资料已更新', 'success');
-      reload();
+      rerender();
     } catch (e) { toast(e.message, 'error'); }
   }
 

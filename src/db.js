@@ -162,6 +162,13 @@ ensureColumn('t_review', 'additional_at', 'additional_at DATETIME');
 // 数据修复（v1.1.1）：头像功能联调期间演示账号昵称被测试脚本误改，此处幂等修正
 db.prepare("UPDATE t_user SET nickname='李思远', avatar='李' WHERE student_no='241603010301' AND nickname<>'李思远'").run();
 
+// 昵称全区唯一（v1.1.2）：重名会让评价/审计日志的操作者无法辨认
+try {
+  db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_user_nickname ON t_user(nickname)');
+} catch (e) {
+  console.warn('[db] 昵称唯一索引创建失败（存在历史重复昵称，请先人工处理）:', e.message);
+}
+
 // 商品类别（与前端下拉一致）
 export const CATEGORIES = ['教材书籍', '电子数码', '生活用品', '体育运动', '服饰美妆', '其他'];
 export const QUALITIES = ['全新', '九成新', '八成新', '七成新及以下'];

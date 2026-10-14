@@ -72,6 +72,9 @@ class CDP {
         errs.push('console.error: ' + e.params.args.map((a) => a.value ?? a.description ?? '').join(' '));
       }
       if (e.method === 'Log.entryAdded' && e.params.entry.level === 'error') {
+        // 过滤网络层资源日志：负向用例（如重名昵称被拒）会故意触发 400，
+        // 真正的 JS 异常/接口处理错误走 Runtime.exceptionThrown 与 console.error，不受影响
+        if (/Failed to load resource/.test(e.params.entry.text)) continue;
         errs.push('日志错误: ' + e.params.entry.text);
       }
     }
@@ -328,19 +331,26 @@ const run = async () => {
     const avatarFlow = await cdp.eval(`(async () => {
       const T = localStorage.getItem('cm_token');
       const svg = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><rect width="64" height="64" fill="#0e9f8e"/><text x="32" y="44" font-size="30" text-anchor="middle" fill="#fff" font-family="sans-serif">像</text></svg>');
-      const put = (body) => fetch('/api/user/profile', { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Auth-Token': T }, body: JSON.stringify(body) }).then(r => r.json());
+      const put = async (body) => {
+        const r = await fetch('/api/user/profile', { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Auth-Token': T }, body: JSON.stringify(body) });
+        return { status: r.status, json: await r.json() };
+      };
       const before = await (await fetch('/api/user/profile', { headers: { 'X-Auth-Token': T } })).json();
       const r1 = await put({ avatar: svg });
       const r2 = await put({ phone: before.data.user.phone || '13800000002' });
+      const r3 = await put({ nickname: '王雨桐' });
       return {
-        set: r1.code === 0,
-        kept: r2.code === 0 && typeof r2.data.user.avatar === 'string' && r2.data.user.avatar.startsWith('data:image'),
-        nickname: r2.data.user.nickname,
+        set: r1.json.code === 0,
+        kept: r2.json.code === 0 && typeof r2.json.data.user.avatar === 'string' && r2.json.data.user.avatar.startsWith('data:image'),
+        nickname: r2.json.data.user.nickname,
+        dupCode: r3.status,
+        dupMsg: r3.json.message,
       };
     })()`);
     check('设置图片头像成功', avatarFlow.set === true);
     check('不带头像的资料编辑保留头像', avatarFlow.kept === true);
     check('资料编辑不误改昵称', avatarFlow.nickname === '李思远', '昵称=' + avatarFlow.nickname);
+    check('重名昵称被拒绝(400)', avatarFlow.dupCode === 400, avatarFlow.dupMsg);
     // 相同 hash 的 goto 不会触发 SPA 重渲染，必须整页刷新后才能看到新头像
     await cdp.send('Page.reload', {});
     await waitApp();
@@ -348,6 +358,29 @@ const run = async () => {
     await sleep(600);
     const hasAvatarImg = await cdp.eval(`!!document.querySelector('.avatar img')`);
     check('头像渲染为上传图片', !!hasAvatarImg);
+
+    // 昵称修改后右上角应即时更新（无需手动刷新）
+    await cdp.eval(`[...document.querySelectorAll('button')].find(b => b.textContent.trim() === '编辑资料')?.click(); 1`);
+    await sleep(500);
+    await cdp.eval(`(() => { const el = [...document.querySelectorAll('#modal-root .form input')][0]; el.value = '李思远Pro'; el.dispatchEvent(new Event('input', { bubbles: true })); return 1; })()`);
+    await cdp.eval(`[...document.querySelectorAll('#modal-root button')].find(b => b.textContent.trim() === '保存')?.click(); 1`);
+    await sleep(900);
+    const chip = await cdp.eval(`(document.querySelector('.userchip-name')||{}).textContent || ''`);
+    check('修改昵称后右上角即时更新', chip === '李思远Pro', chip);
+
+    // 恢复昵称并同步本地会话
+    await cdp.eval(`(async () => {
+      const T = localStorage.getItem('cm_token');
+      const r = await (await fetch('/api/user/profile', { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Auth-Token': T }, body: JSON.stringify({ nickname: '李思远' }) })).json();
+      const u = JSON.parse(localStorage.getItem('cm_user'));
+      u.nickname = r.data.user.nickname; u.avatar = r.data.user.avatar;
+      localStorage.setItem('cm_user', JSON.stringify(u));
+      location.reload();
+      return r.code;
+    })()`);
+    await waitApp();
+    await waitRender();
+    await sleep(500);
     await shot('09-个人中心');
 
     // ---------- 11. 普通用户访问管理后台 → 权限拦截 ----------

@@ -186,6 +186,9 @@ async function render() {
 window.addEventListener('hashchange', () => { if (currentCleanup) { try { currentCleanup(); } catch {} currentCleanup = null; } render(); });
 window.addEventListener('auth:expired', () => { toast('登录已过期，请重新登录', 'error'); window.location.hash = '#/login'; render(); });
 
+/** 供视图在改动会话信息（昵称/头像等）后调用：整页重渲染，顶栏与内容区即时同步 */
+export function rerender() { render(); }
+
 // ---------- 启动 ----------
 async function boot() {
   try { META = await api.get('/api/meta', { auth: false }); } catch {}

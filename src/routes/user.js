@@ -34,9 +34,9 @@ export function registerUser(router) {
     if (password.length < 6) throw bad('密码长度至少 6 位');
     if (nickname.length < 2 || nickname.length > 20) throw bad('昵称长度应为 2~20 个字符');
     if (phone && !/^1\d{10}$/.test(phone)) throw bad('手机号格式不正确');
-
     const exists = db.prepare('SELECT user_id FROM t_user WHERE student_no=?').get(student_no);
     if (exists) throw bad('该学号已注册，请直接登录');
+    if (db.prepare('SELECT user_id FROM t_user WHERE nickname=?').get(nickname)) throw bad('该昵称已被使用，请换一个');
 
     const r = db
       .prepare(
@@ -108,6 +108,9 @@ export function registerUser(router) {
     if (body.nickname !== undefined) {
       const nickname = String(body.nickname || '').trim();
       if (nickname.length < 2 || nickname.length > 20) throw bad('昵称长度应为 2~20 个字符');
+      if (db.prepare('SELECT user_id FROM t_user WHERE nickname=? AND user_id<>?').get(nickname, me.sub)) {
+        throw bad('该昵称已被其他用户使用，请换一个');
+      }
       sets.push('nickname=?'); args.push(nickname);
     }
     if (body.phone !== undefined) {
