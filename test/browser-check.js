@@ -364,6 +364,7 @@ const run = async () => {
     await goto('#/admin/logs', 1300);
     t = await text();
     check('审计日志页渲染', t.includes('审计日志') && t.includes('动作'));
+    check('操作者显示真实身份（昵称/姓名+账号）', t.includes('谭以勒（241603010213）') && t.includes('平台超级管理员（admin）'));
     await shot('15-管理后台-审计日志');
 
     // ---------- 13. 全流程无 JS 错误 ----------

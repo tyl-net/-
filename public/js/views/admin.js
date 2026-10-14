@@ -322,8 +322,18 @@ export async function renderLogs(root) {
       h('thead', {}, h('tr', {}, ['时间', '操作者', '动作', '详情'].map((t) => h('th', { text: t })))),
       h('tbody', {}, ...d.list.map((l) => h('tr', {},
         h('td', { class: 'cell-sub' }, fmtTime(l.created_at)),
-        h('td', {}, badge(l.actor_type === 'admin' ? '管理员' : l.actor_type === 'system' ? '系统' : '用户', l.actor_type === 'admin' ? 'badge-warn' : l.actor_type === 'system' ? 'badge-muted' : 'badge-info'),
-          h('span', { class: 'cell-sub', style: { marginLeft: 'var(--space-6)' }, text: '#' + (l.actor_id ?? '—') })),
+        h('td', {},
+          badge(l.actor_type === 'admin' ? '管理员' : l.actor_type === 'system' ? '系统' : '用户', l.actor_type === 'admin' ? 'badge-warn' : l.actor_type === 'system' ? 'badge-muted' : 'badge-info'),
+          // 操作者展示真实身份：昵称/姓名 + 账号；身份已不存在的回退为 #ID
+          l.actor_type !== 'system'
+            ? h('span', {
+                class: l.actor_name ? 'cell-strong' : 'cell-sub',
+                style: { marginLeft: 'var(--space-6)' },
+                text: l.actor_name
+                  ? l.actor_name + (l.actor_account ? '（' + l.actor_account + '）' : '')
+                  : '#' + (l.actor_id ?? '—'),
+              })
+            : null),
         h('td', { class: 'cell-strong' }, l.action),
         h('td', { class: 'cell-sub' }, l.detail || '—')
       )))

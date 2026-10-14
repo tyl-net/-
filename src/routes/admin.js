@@ -212,9 +212,20 @@ export function registerAdmin(router) {
   });
 
   // 审计日志
+  // 审计日志（最近 100 条）：解析操作者真实身份 —— 用户→昵称+学号，管理员→姓名+账号
   router.get('/api/admin/logs', async (req, res) => {
     requireAdmin(req);
-    const list = db.prepare('SELECT * FROM t_audit_log ORDER BY id DESC LIMIT 100').all();
+    const list = db
+      .prepare(
+        `SELECT a.*,
+           CASE a.actor_type WHEN 'user' THEN u.nickname WHEN 'admin' THEN ad.name ELSE '系统' END AS actor_name,
+           CASE a.actor_type WHEN 'user' THEN u.student_no WHEN 'admin' THEN ad.account ELSE '' END AS actor_account
+         FROM t_audit_log a
+         LEFT JOIN t_user  u  ON a.actor_type='user'  AND a.actor_id=u.user_id
+         LEFT JOIN t_admin ad ON a.actor_type='admin' AND a.actor_id=ad.admin_id
+         ORDER BY a.id DESC LIMIT 100`
+      )
+      .all();
     return ok(res, { list });
   });
 }
