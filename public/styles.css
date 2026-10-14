@@ -136,8 +136,17 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; }
 
 .avatar {
   display: inline-grid; place-items: center; border-radius: var(--radius-circle); color: var(--color-text-inverse);
-  font-weight: var(--font-weight-bold); flex-shrink: 0; user-select: none;
+  font-weight: var(--font-weight-bold); flex-shrink: 0; user-select: none; overflow: hidden;
 }
+.avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.avatar-wrap { position: relative; flex-shrink: 0; }
+.avatar-edit {
+  position: absolute; right: -6px; bottom: -6px; width: 26px; height: 26px; border-radius: var(--radius-full);
+  border: 2px solid var(--color-bg-surface); background: var(--color-action-primary); color: var(--color-text-inverse);
+  font-size: var(--font-size-xs); line-height: var(--line-height-none); cursor: pointer; display: grid; place-items: center;
+  transition: var(--duration-fast) var(--ease-standard);
+}
+.avatar-edit:hover { background: var(--color-action-primary-hover); }
 .stars { color: var(--color-rating); letter-spacing: 1px; font-size: var(--font-size-sm); }
 .star-off { color: var(--color-rating-off); }
 

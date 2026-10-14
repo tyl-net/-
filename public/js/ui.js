@@ -212,6 +212,30 @@ function compressImage(file, { maxSide = 900, quality = 0.72 } = {}) {
   });
 }
 
+/** 头像专用：选图后居中裁方、缩放到 size×size 并压缩为 JPEG dataURI */
+export function fileToAvatarDataURI(file, size = 256) {
+  return new Promise((resolve, reject) => {
+    if (!/^image\//.test(file.type)) return reject(new Error('请选择图片文件'));
+    if (file.size > 8 * 1024 * 1024) return reject(new Error('图片超过 8MB，请先压缩'));
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('图片读取失败'));
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error('不是有效图片'));
+      img.onload = () => {
+        const side = Math.max(1, Math.min(img.width, img.height));
+        const canvas = document.createElement('canvas');
+        canvas.width = size; canvas.height = size;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, (img.width - side) / 2, (img.height - side) / 2, side, side, 0, 0, size, size);
+        resolve(canvas.toDataURL('image/jpeg', 0.85));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
 /**
  * 商品图片选择器：本地预览 + 客户端压缩 + 增删。
  * 返回 { el, getImages() }，图片以 data URI 数组形式随商品一起提交。
@@ -296,16 +320,19 @@ export function stars(score) {
   return h('span', { class: 'stars', html: '★'.repeat(s) + '<span class="star-off">' + '★'.repeat(5 - s) + '</span>' });
 }
 
-export function avatar(name, size = 36) {
-  const n = String(name || '?');
+/** 头像：传入字符串 → 首字渐变圆；传入 { nickname, avatar } 且 avatar 为图片 dataURI → 图片头像 */
+export function avatar(user, size = 36) {
+  const obj = typeof user === 'object' && user !== null ? user : { nickname: user };
+  const n = String(obj.nickname || obj.name || obj.account || '?');
+  const pic = typeof obj.avatar === 'string' && obj.avatar.startsWith('data:image') ? obj.avatar : '';
   const palette = ['var(--viz-digital-1)', 'var(--viz-book-1)', 'var(--viz-life-1)', 'var(--viz-sport-1)', 'var(--viz-fashion-1)', 'var(--color-success)', 'var(--orange-600)'];
   let hash = 0;
   for (const ch of n) hash = (hash * 31 + ch.charCodeAt(0)) % 997;
   return h('span', {
     class: 'avatar',
-    style: { width: size + 'px', height: size + 'px', background: palette[hash % palette.length], fontSize: size * 0.42 + 'px' },
-    text: n.slice(0, 1),
-  });
+    style: { width: size + 'px', height: size + 'px', background: pic ? 'var(--color-bg-muted)' : palette[hash % palette.length], fontSize: size * 0.42 + 'px' },
+    title: n,
+  }, pic ? h('img', { src: pic, alt: n }) : n.slice(0, 1));
 }
 
 export function loading(text = '加载中…') {

@@ -179,7 +179,7 @@ export async function renderUsers(root) {
       onClick: () => toggle(u, load),
     }));
     return h('tr', {},
-      h('td', {}, h('div', { class: 'flex-gap' }, avatar(u.nickname, 32), h('span', { class: 'cell-strong' }, u.nickname))),
+      h('td', {}, h('div', { class: 'flex-gap' }, avatar(u, 32), h('span', { class: 'cell-strong' }, u.nickname))),
       h('td', { class: 'num' }, u.student_no),
       h('td', { class: 'cell-sub' }, u.phone || '—'),
       h('td', { class: 'num' }, h('b', { style: { color: 'var(--brand-dark)' }, text: u.credit_score })),

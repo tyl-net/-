@@ -222,7 +222,7 @@ export async function renderDetail(root, params) {
 export function reviewItem(r) {
   return h('div', { class: 'review-item' },
     h('div', { class: 'review-head' },
-      avatar(r.buyer_name || r.nickname, 32),
+      avatar({ nickname: r.buyer_name || r.nickname, avatar: r.buyer_avatar }, 32),
       h('div', {},
         h('div', { class: 'review-name', text: r.buyer_name || r.nickname }),
         stars(r.score)

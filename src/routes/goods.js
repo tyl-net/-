@@ -196,7 +196,7 @@ export function registerGoods(router) {
   router.get('/api/goods/:id/reviews', async (req, res, body, params) => {
     const list = db
       .prepare(
-        `SELECT r.*, u.nickname AS buyer_name FROM t_review r JOIN t_user u ON r.user_id=u.user_id
+        `SELECT r.*, u.nickname AS buyer_name, u.avatar AS buyer_avatar FROM t_review r JOIN t_user u ON r.user_id=u.user_id
          WHERE r.goods_id=? ORDER BY r.review_id DESC`
       )
       .all(Number(params.id));

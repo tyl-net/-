@@ -1,6 +1,6 @@
 // 个人中心：资料维护、实名认证、修改密码
 import { api, session } from '../api.js';
-import { h, toast, badge, avatar, stars, timeAgo, empty, loading, formDialog, confirmDialog } from '../ui.js';
+import { h, toast, badge, avatar, stars, timeAgo, empty, loading, formDialog, confirmDialog, fileToAvatarDataURI } from '../ui.js';
 import { go } from '../app.js';
 
 export async function render(root) {
@@ -29,7 +29,9 @@ export async function render(root) {
     h('div', { class: 'mt-16' }, verifyBox),
     h('div', { class: 'card mt-16' },
       h('div', { class: 'flex-gap' },
-        avatar(u.nickname, 62),
+        h('div', { class: 'avatar-wrap' },
+          avatar(u, 62),
+          h('button', { class: 'avatar-edit', title: '更换头像', text: '📷', onClick: () => changeAvatar(load) })),
         h('div', { class: 'grow' },
           h('div', { style: { fontSize: 'var(--font-size-xl)', fontWeight: '700' } }, u.nickname,
             u.is_verified === 1 ? h('span', { class: 'badge badge-ok', style: { marginLeft: 'var(--space-8)' }, text: '已实名' }) : null),
@@ -55,6 +57,26 @@ export async function render(root) {
   function attr(k, v) { return h('div', { class: 'attr' }, h('div', { class: 'attr-k', text: k }), h('div', { class: 'attr-v', text: String(v) })); }
 
   async function load() { render(root); }
+
+  // 更换头像：本地选图 → 居中裁方压缩 → 保存 → 同步本地会话
+  function changeAvatar(reload) {
+    const input = h('input', { type: 'file', accept: 'image/png,image/jpeg,image/webp', style: { display: 'none' } });
+    document.body.append(input);
+    input.onchange = async () => {
+      const file = input.files && input.files[0];
+      input.remove();
+      if (!file) return;
+      try {
+        const dataURI = await fileToAvatarDataURI(file, 256);
+        const res = await api.put('/api/user/profile', { avatar: dataURI });
+        const cur = session.user;
+        session.save(session.token, { ...cur, avatar: res.user.avatar }, cur.type);
+        toast('头像已更新', 'success');
+        reload();
+      } catch (e) { toast(e.message, 'error'); }
+    };
+    input.click();
+  }
 
   async function edit(reload) {
     const r = await formDialog({

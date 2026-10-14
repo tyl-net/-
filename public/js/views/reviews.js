@@ -1,5 +1,5 @@
 // 评价中心：我发出的评价 / 我收到的评价（含卖家回复）
-import { api } from '../api.js';
+import { api, session } from '../api.js';
 import { h, toast, badge, empty, loading, stars, avatar, timeAgo, formDialog, confirmDialog, cover } from '../ui.js';
 import { go } from '../app.js';
 
@@ -63,7 +63,7 @@ export async function render(root) {
 
     return h('div', { class: 'review-item' },
       h('div', { class: 'review-head' },
-        avatar(who, 34),
+        avatar({ nickname: who, avatar: isReceived ? r.buyer_avatar : session.user?.avatar }, 34),
         h('div', {},
           h('div', { class: 'review-name' }, who, h('span', { class: 'small muted', style: { fontWeight: '400', marginLeft: 'var(--space-8)' } }, isReceived ? '评价了你' : '你的评价')),
           stars(r.score)

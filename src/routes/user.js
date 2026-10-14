@@ -100,7 +100,7 @@ export function registerUser(router) {
     return ok(res, { user: publicUser(u), stat });
   });
 
-  // 修改个人资料
+  // 修改个人资料（avatar 仅在传入时更新，避免未带头像的编辑把已上传头像重置为首字）
   router.put('/api/user/profile', async (req, res, body) => {
     const me = requireUser(req);
     const nickname = String(body.nickname || '').trim();
@@ -110,11 +110,14 @@ export function registerUser(router) {
     if (nickname && (nickname.length < 2 || nickname.length > 20)) throw bad('昵称长度应为 2~20 个字符');
     if (phone && !/^1\d{10}$/.test(phone)) throw bad('手机号格式不正确');
     if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) throw bad('邮箱格式不正确');
+    if (avatar && avatar.length > 500_000) throw bad('头像图片过大，请压缩后重试');
+    const cur = db.prepare('SELECT avatar FROM t_user WHERE user_id=?').get(me.sub);
+    const nextAvatar = avatar || (cur && cur.avatar) || nickname.slice(0, 1) || '用';
     db.prepare('UPDATE t_user SET nickname=?, phone=?, email=?, avatar=? WHERE user_id=?').run(
       nickname,
       phone || null,
       email || null,
-      avatar || nickname.slice(0, 1),
+      nextAvatar,
       me.sub
     );
     const u = db.prepare('SELECT * FROM t_user WHERE user_id=?').get(me.sub);
@@ -160,7 +163,7 @@ export function registerUser(router) {
       .map(normalizeGoodsRow);
     const reviews = db
       .prepare(
-        `SELECT r.*, g.title AS goods_title, u2.nickname AS buyer_name
+        `SELECT r.*, g.title AS goods_title, u2.nickname AS buyer_name, u2.avatar AS buyer_avatar
          FROM t_review r JOIN t_goods g ON r.goods_id=g.goods_id
          JOIN t_user u2 ON r.user_id=u2.user_id
          WHERE g.seller_id=? ORDER BY r.review_id DESC LIMIT 20`

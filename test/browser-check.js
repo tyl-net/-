@@ -323,6 +323,20 @@ const run = async () => {
     t = await text();
     check('个人中心渲染', t.includes('信用分') && t.includes('账号安全'));
     check('实名认证状态展示', t.includes('实名'));
+
+    // 头像：接口设置图片头像 → 渲染为图片头像；随后不带 avatar 的资料编辑不清除头像
+    const avatarFlow = await cdp.eval(`(async () => {
+      const T = localStorage.getItem('cm_token');
+      const svg = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><rect width="64" height="64" fill="#0e9f8e"/><text x="32" y="44" font-size="30" text-anchor="middle" fill="#fff" font-family="sans-serif">谭</text></svg>');
+      const put = (body) => fetch('/api/user/profile', { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Auth-Token': T }, body: JSON.stringify(body) }).then(r => r.json());
+      const r1 = await put({ avatar: svg });
+      const r2 = await put({ nickname: '谭以勒' });
+      return r1.code === 0 && r2.code === 0 && typeof r2.data.user.avatar === 'string' && r2.data.user.avatar.startsWith('data:image');
+    })()`);
+    check('设置图片头像成功且编辑资料不清除', !!avatarFlow);
+    await goto('#/profile', 1300);
+    const hasAvatarImg = await cdp.eval(`!!document.querySelector('.avatar img')`);
+    check('头像渲染为上传图片', !!hasAvatarImg);
     await shot('09-个人中心');
 
     // ---------- 11. 普通用户访问管理后台 → 权限拦截 ----------

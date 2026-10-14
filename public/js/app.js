@@ -69,7 +69,7 @@ function userMenu() {
   const u = session.user;
   const wrap = h('div', { style: { position: 'relative' } });
   const chip = h('div', { class: 'userchip' },
-    avatar(u.nickname || u.name || u.account, 30),
+    avatar(u, 30),
     h('div', { style: { lineHeight: '1.25' } },
       h('div', { class: 'userchip-name', text: u.nickname || u.name || u.account }),
       h('div', { class: 'userchip-sub', text: u.type === 'admin' ? (u.role === 2 ? '超级管理员' : '普通管理员') : `信用分 ${u.credit_score ?? '—'}` })
