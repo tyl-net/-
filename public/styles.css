@@ -483,6 +483,7 @@ tbody tr:hover { background: var(--table-row-hover); }
 
 /* 手机屏 */
 @media (max-width: 620px) {
+  * { -webkit-tap-highlight-color: transparent; }
   .logo-text { font-size: var(--font-size-lg); }
   .logo-mark { width: 30px; height: 30px; }
   .topbar-right { gap: var(--space-8); }
@@ -491,6 +492,7 @@ tbody tr:hover { background: var(--table-row-hover); }
   .page { padding: var(--space-12) var(--space-10) var(--space-40); }
   .page-head { flex-direction: column; align-items: flex-start; gap: var(--space-10); }
   .page-title { font-size: var(--font-size-xl); }
+  .page-desc { font-size: var(--font-size-xs); }
   .card { padding: var(--space-12); }
   .card-title { font-size: var(--font-size-md); margin-bottom: var(--space-10); }
 
@@ -499,10 +501,20 @@ tbody tr:hover { background: var(--table-row-hover); }
   .goods-title { font-size: var(--font-size-sm); min-height: 0; -webkit-line-clamp: 2; }
   .goods-body { padding: var(--space-10); gap: var(--space-6); }
   .goods-foot { flex-direction: column; align-items: flex-start; gap: var(--space-6); }
+  .price { font-size: var(--font-size-lg); }
 
   /* 搜索工具条：搜索框独占一行 */
   .search-box { flex: 1 1 100%; min-width: 0; }
   .toolbar { gap: var(--space-8); }
+
+  /* 分类标签：单行横向滑动（不换行占空间） */
+  .chips { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; padding-bottom: var(--space-4); }
+  .chips::-webkit-scrollbar { display: none; }
+  .chip { flex-shrink: 0; }
+
+  /* 公告：紧凑化，正文单行截断 */
+  .ann { padding: var(--space-10) var(--space-12); }
+  .ann p { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
 
   /* 订单卡：纵向堆叠，操作按钮铺满 */
   .order-body { flex-direction: column; align-items: stretch; gap: var(--space-10); }
