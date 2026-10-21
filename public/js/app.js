@@ -87,8 +87,7 @@ function userMenu(u) {
     if (u.type !== 'admin') {
       menu.append(item('个人中心', () => go('#/profile')));
       menu.append(item('我的订单', () => go('#/orders')));
-      // 管理后台入口收进菜单：首页顶栏不再直接露出
-      menu.append(item('管理后台', () => { sessionStorage.setItem('cm_login_role', 'admin'); go('#/admin'); }));
+      // 管理员登录统一从登录页的「管理员登录」页签进入，学生菜单不放管理后台入口
     } else {
       menu.append(item('数据看板', () => go('#/admin')));
     }
