@@ -208,6 +208,22 @@ const run = async () => {
     t = await text();
     check('游客访问发布页得到登录引导', t.includes('该功能需要登录') && t.includes('去登录'));
 
+    // 移动端：导航收进汉堡抽屉（≤900px）
+    await cdp.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+    await goto('#/home', 1000);
+    const mob = await cdp.eval(`({
+      toggle: !!document.querySelector('.nav-toggle'),
+      inlineHidden: getComputedStyle(document.querySelector('.mainnav')).display === 'none',
+      panel: !!document.querySelector('.mobile-nav'),
+    })`);
+    check('移动端导航收进汉堡菜单', mob.toggle && mob.inlineHidden && mob.panel);
+    await cdp.eval(`document.querySelector('.nav-toggle').click()`);
+    await sleep(300);
+    check('汉堡菜单可展开导航', (await cdp.eval(`getComputedStyle(document.querySelector('.mobile-nav')).display`) !== 'none'));
+    await shot('00b-移动端导航');
+    await cdp.send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
+    await goto('#/login', 800);
+
     // 登录页本身正常
     await goto('#/login');
     t = await waitText('登 录');

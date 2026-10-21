@@ -67,6 +67,11 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; }
 .logo-text { font-size: var(--font-size-xl); font-weight: var(--font-weight-bold); letter-spacing: .5px; }
 .logo-sub { font-size: var(--font-size-2xs); color: var(--ink-3); margin-left: var(--space-2); align-self: flex-end; padding-bottom: var(--space-4); }
 
+/* 移动端导航：默认隐藏，≤900px 由汉堡按钮展开抽屉 */
+.nav-toggle { display: none; flex-direction: column; justify-content: center; gap: var(--space-1); width: 34px; height: 34px; padding: 0 var(--space-8); border: 1px solid var(--line); border-radius: var(--radius-8); background: var(--color-bg-surface); cursor: pointer; }
+.nav-toggle span { display: block; height: 2px; width: 100%; background: var(--ink-2); border-radius: var(--radius-full); }
+.mobile-nav { display: none; }
+
 .mainnav { display: flex; gap: var(--space-4); flex: 1; }
 .mainnav a {
   padding: var(--space-8) var(--space-14); border-radius: var(--radius-8); color: var(--ink-2); font-weight: var(--font-weight-medium);
@@ -455,8 +460,15 @@ tbody tr:hover { background: var(--table-row-hover); }
 .detail-thumbs img.active { border: 2px solid var(--brand); }
 
 /* ============ 响应式 ============ */
-/* 平板 / 中等屏 */
+/* 平板 / 中等屏：导航收进汉堡抽屉 */
 @media (max-width: 900px) {
+  .mainnav { display: none; }
+  .nav-toggle { display: flex; }
+  .mobile-nav { display: none; flex-direction: column; gap: var(--space-2); padding: var(--space-8) var(--space-12) var(--space-12); border-top: 1px solid var(--line); background: var(--topbar-bg); }
+  .mobile-nav.open { display: flex; }
+  .mobile-nav a { padding: var(--space-10) var(--space-12); border-radius: var(--radius-8); color: var(--ink-2); font-weight: var(--font-weight-medium); }
+  .mobile-nav a.active { background: var(--brand-soft); color: var(--brand-dark); }
+
   .auth-wrap { grid-template-columns: 1fr; }
   .auth-hero { display: none; }
   .auth-panel { padding: var(--space-40) var(--space-20); }
@@ -464,8 +476,7 @@ tbody tr:hover { background: var(--table-row-hover); }
   .detail-cover { max-height: 60vh; }
   .topbar-inner { gap: var(--space-12); padding: 0 var(--space-12); }
   .logo-sub { display: none; }
-  .mainnav { gap: var(--space-2); }
-  .mainnav a { padding: var(--space-8) var(--space-10); }
+  .topbar-right { margin-left: auto; }
   .page { padding: var(--space-16) var(--space-12) var(--space-48); }
   .stat-grid { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-10); }
 }
@@ -474,10 +485,6 @@ tbody tr:hover { background: var(--table-row-hover); }
 @media (max-width: 620px) {
   .logo-text { font-size: var(--font-size-lg); }
   .logo-mark { width: 30px; height: 30px; }
-  /* 导航：横向滚动 + 隐藏滚动条（移动端 tab 式导航） */
-  .mainnav { overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; }
-  .mainnav::-webkit-scrollbar { display: none; }
-  .mainnav a { font-size: var(--font-size-sm); padding: var(--space-6) var(--space-12); flex-shrink: 0; }
   .topbar-right { gap: var(--space-8); }
   .userchip-sub { display: none; }
 

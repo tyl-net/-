@@ -111,6 +111,14 @@ function topbar(activeNav, u) {
   const nav = h('nav', { class: 'mainnav' },
     navItems.map((n) => h('a', { href: n.href, class: n.nav === activeNav ? 'active' : '', text: n.label }))
   );
+  // 移动端：汉堡按钮 + 抽屉导航（≤900px 显示，替代横向滚动导航）
+  const mobileNav = h('nav', { class: 'mobile-nav' },
+    navItems.map((n) => h('a', { href: n.href, class: n.nav === activeNav ? 'active' : '', text: n.label }))
+  );
+  const navToggle = h('button', { class: 'nav-toggle', title: '导航菜单', 'aria-label': '导航菜单',
+    onClick: () => mobileNav.classList.toggle('open') },
+    h('span', {}), h('span', {}), h('span', {})
+  );
   const right = h('div', { class: 'topbar-right' });
   if (isGuest) {
     // 游客：右上角仅登录入口（管理员可从登录页的「管理员登录」页签进入）
@@ -128,8 +136,9 @@ function topbar(activeNav, u) {
         h('div', { class: 'logo-text', text: '校园集市' }),
         h('div', { class: 'logo-sub', text: '校园二手交易平台' })
       ),
-      nav, right
-    )
+      nav, navToggle, right
+    ),
+    mobileNav
   );
 }
 
