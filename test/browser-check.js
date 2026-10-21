@@ -195,9 +195,22 @@ const run = async () => {
       fs.writeFileSync(path.join(SHOT_DIR, name + '.png'), Buffer.from(data, 'base64'));
     };
 
-    // ---------- 1. 未登录 → 登录页 ----------
+    // ---------- 1. 游客可直接浏览集市（无需登录）----------
+    await goto('#/home');
+    let t = await waitText('二手集市');
+    check('游客可直达集市首页（无需登录）', t.includes('二手集市') && t.includes('搜索'));
+    check('游客右上角显示登录入口', t.includes('登录'));
+    check('游客浏览商品卡片', /¥\d+\.\d{2}/.test(t));
+    await shot('00-游客集市首页');
+
+    // 游客访问需要登录的页面 → 登录引导
+    await goto('#/publish', 600);
+    t = await text();
+    check('游客访问发布页得到登录引导', t.includes('该功能需要登录') && t.includes('去登录'));
+
+    // 登录页本身正常
     await goto('#/login');
-    let t = await waitText('登 录');
+    t = await waitText('登 录');
     check('登录页渲染', t.includes('校园集市') && t.includes('登 录'), `${t.length} 字符`);
     check('演示账号提示可见', t.includes('241603010213') && t.includes('123456'));
     await shot('01-登录页');

@@ -27,10 +27,12 @@ export async function render(root) {
   root.append(
     h('div', { class: 'page-head' },
       h('div', {}, h('h1', { class: 'page-title', text: '二手集市' }), h('p', { class: 'page-desc', text: '浏览校园内在售的闲置好物，支持关键词、类别与价格区间组合检索' })),
-      // 管理员身份（只读浏览）不显示发布入口；学生身份才可发布
+      // 学生可发布；游客点击发布引导登录；管理员只读浏览显示徽章
       session.user
         ? h('button', { class: 'btn btn-primary', text: '＋ 发布闲置', onClick: () => go('#/publish') })
-        : h('span', { class: 'badge badge-muted', text: '管理员浏览模式 · 不参与发布与交易' })
+        : session.admin
+          ? h('span', { class: 'badge badge-muted', text: '管理员浏览模式 · 不参与发布与交易' })
+          : h('button', { class: 'btn btn-primary', text: '＋ 发布闲置', onClick: () => go('#/login') })
     ),
     annBox,
     h('div', { class: 'card' },
@@ -140,6 +142,7 @@ export async function renderDetail(root, params) {
   const g = data.goods;
   const me = session.user;
   const adminBrowsing = !me && !!session.admin; // 管理员只读浏览
+  const guest = !me && !adminBrowsing; // 游客：可浏览，操作需登录
   const mine = me && me.type === 'user' && me.user_id === g.seller_id;
   const canBuy = g.audit_status === 1 && g.goods_status === 1 && !mine && !adminBrowsing;
 
@@ -249,6 +252,12 @@ function attr(k, v) {
 }
 
 async function placeOrder(g) {
+  // 游客下单前先引导登录
+  if (!session.user) {
+    toast('请先登录后再下单', 'info');
+    go('#/login');
+    return;
+  }
   const okc = await confirmDialog(`确认以 ${yuan(g.price)} 购买「${g.title}」？\n下单后请在「我的订单」中完成支付。`, { title: '确认下单', okText: '确认下单' });
   if (!okc) return;
   try {

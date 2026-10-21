@@ -102,9 +102,9 @@ try {
   // v1.2 双会话：管理员身份存于本标签页的 sessionStorage
   await evaluate(`sessionStorage.setItem('cm_admin_token', ${JSON.stringify(at)});sessionStorage.setItem('cm_admin', ${JSON.stringify(JSON.stringify({ ...adminLogin.data.admin, type: 'admin' }))});'ok'`);
 
-  // 直接复现原始路径：集市 → 发布闲置
-  await send('Page.navigate', { url: BASE + '/#/home' });
-  await sleep(1100);
+  // 直接复现原始路径：集市 → 发布闲置（写入会话后需整页重载，相同 hash 不触发重渲染）
+  await send('Page.reload', {});
+  await sleep(1400);
   const home = await evaluate(`({
     publishBtn: !!([...document.querySelectorAll('button')].find(b => b.textContent.includes('发布闲置'))),
     adminBadge: !!([...document.querySelectorAll('.page-head .badge')].find(b => b.textContent.includes('管理员浏览模式'))),

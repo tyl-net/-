@@ -104,18 +104,24 @@ function userMenu(u) {
 }
 
 function topbar(activeNav, u) {
-  const isAdmin = u.type === 'admin';
+  const isAdmin = !!(u && u.type === 'admin');
+  const isGuest = !u;
   const navItems = isAdmin ? ADMIN_NAV : USER_NAV;
   const nav = h('nav', { class: 'mainnav' },
     navItems.map((n) => h('a', { href: n.href, class: n.nav === activeNav ? 'active' : '', text: n.label }))
   );
   const right = h('div', { class: 'topbar-right' });
-  if (isAdmin) {
+  if (isGuest) {
+    // 游客：右上角提供登录入口；管理后台入口也可直接进
+    right.append(h('button', { class: 'btn btn-ghost btn-sm', text: '管理后台', onClick: () => { sessionStorage.setItem('cm_login_role', 'admin'); go('#/admin'); }, title: '进入管理员视图' }));
+    right.append(h('button', { class: 'btn btn-primary btn-sm', text: '登录', onClick: () => go('#/login') }));
+  } else if (isAdmin) {
     right.append(h('button', { class: 'btn btn-ghost btn-sm', text: '返回前台', onClick: () => go('#/home'), title: '以管理员身份浏览集市（只读）' }));
+    right.append(userMenu(u));
   } else {
     right.append(h('button', { class: 'btn btn-ghost btn-sm', text: '管理后台', onClick: () => { sessionStorage.setItem('cm_login_role', 'admin'); go('#/admin'); }, title: '进入管理员视图' }));
+    right.append(userMenu(u));
   }
-  right.append(userMenu(u));
   return h('header', { class: 'topbar' },
     h('div', { class: 'topbar-inner' },
       h('div', { class: 'logo', onClick: () => go(isAdmin ? '#/admin' : '#/home') },
@@ -133,27 +139,35 @@ let currentCleanup = null;
 async function render() {
   const { route, params } = matchRoute(window.location.hash);
   const onAdminRoute = route.path.startsWith('/admin');
-  // 身份解析：管理路由用管理员会话；前台优先学生身份，仅有管理员会话时以只读方式浏览
-  const u = onAdminRoute ? session.admin : (session.user || session.admin);
-  // 任一身份在场即视为已进入站点（管理员路由缺管理员身份时走权限提示卡，而非登录页）
-  const loggedIn = !!(session.token || session.adminToken);
+  // 身份解析：管理路由用管理员会话；前台优先学生身份（游客 = 两者皆无）
+  const u = onAdminRoute ? session.admin : (session.user || session.admin || null);
+  const loggedIn = !!u;
 
-  // 无任何身份 → 登录页
-  if (!loggedIn) {
-    if (window.location.hash !== '#/login') { window.location.hash = '#/login'; return; }
-    app.replaceChildren(authView.render());
+  // 游客访问需要登录的前台页面（发布/我的商品/订单/评价/个人中心）→ 登录引导
+  if (!onAdminRoute && route.auth && !loggedIn) {
+    app.replaceChildren(topbar(route.nav, null), h('main', { class: 'page' },
+      h('div', { class: 'card', style: { maxWidth: '560px', margin: 'var(--space-24) auto' } },
+        h('h3', { class: 'card-title', text: '该功能需要登录' }),
+        h('p', { class: 'muted', text: '登录后即可发布闲置、下单、评价与查看个人中心。游客仍可自由浏览集市。' }),
+        h('div', { class: 'flex-gap mt-16' },
+          h('button', { class: 'btn btn-primary', text: '去登录', onClick: () => go('#/login') }),
+          h('button', { class: 'btn btn-ghost', text: '继续逛集市', onClick: () => go('#/home') })
+        )
+      )
+    ));
     return;
   }
-  if (window.location.hash === '#/login' || !window.location.hash) {
-    // 带着管理员登录提示进入时，允许在保留学生会话的同一页登录管理员（双会话核心场景）
-    if (sessionStorage.getItem('cm_login_role') === 'admin') { app.replaceChildren(authView.render()); return; }
-    window.location.hash = session.user ? '#/home' : (session.admin ? '#/admin' : '#/login');
+
+  // 登录页本身：已登录则回首页/看板；未登录正常渲染
+  if (window.location.hash === '#/login') {
+    if (loggedIn) { window.location.hash = u.type === 'admin' ? '#/admin' : '#/home'; return; }
+    app.replaceChildren(authView.render());
     return;
   }
   // 管理路由但没有管理员身份
   if (onAdminRoute && (!u || u.type !== 'admin')) {
     const hasUser = !!session.user;
-    app.replaceChildren(topbar(route.nav, session.admin || session.user || { nickname: '游客', type: 'user' }), h('main', { class: 'page' },
+    app.replaceChildren(topbar(route.nav, session.admin || session.user || null), h('main', { class: 'page' },
       h('div', { class: 'card' },
         h('h3', { class: 'card-title', text: '需要管理员权限' }),
         h('p', { class: 'muted', text: hasUser
@@ -168,7 +182,6 @@ async function render() {
     return;
   }
   // 学生专属页面：管理员身份（只读浏览）不参与实名认证与交易，直接给说明页
-  const USER_ONLY = ['/publish', '/my-goods', '/orders', '/reviews', '/profile'];
   if (route.auth && !onAdminRoute && u.type === 'admin') {
     app.replaceChildren(topbar(route.nav, u), h('main', { class: 'page' },
       h('div', { class: 'card', style: { maxWidth: '640px', margin: 'var(--space-24) auto' } },
@@ -207,7 +220,8 @@ async function boot() {
   session.migrateLegacy(); // 旧版管理员会话迁移到本标签页的管理员槽位
   try { META = await api.get('/api/meta', { auth: false }); } catch {}
   if (!window.location.hash) {
-    window.location.hash = session.user ? '#/home' : (session.adminToken ? '#/admin' : '#/login');
+    // 游客/学生默认进集市首页；仅管理员（且无学生会话）默认进数据看板
+    window.location.hash = session.adminToken && !session.user ? '#/admin' : '#/home';
   }
   render();
 }
