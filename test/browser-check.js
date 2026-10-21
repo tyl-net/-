@@ -199,7 +199,7 @@ const run = async () => {
     await goto('#/home');
     let t = await waitText('二手集市');
     check('游客可直达集市首页（无需登录）', t.includes('二手集市') && t.includes('搜索'));
-    check('游客右上角显示登录入口', t.includes('登录'));
+    check('游客右上角显示登录入口（无管理后台入口）', t.includes('登录') && !t.includes('管理后台'));
     check('游客浏览商品卡片', /¥\d+\.\d{2}/.test(t));
     await shot('00-游客集市首页');
 
@@ -213,6 +213,7 @@ const run = async () => {
     t = await waitText('登 录');
     check('登录页渲染', t.includes('校园集市') && t.includes('登 录'), `${t.length} 字符`);
     check('演示账号提示可见', t.includes('241603010213') && t.includes('123456'));
+    check('登录页可返回集市首页', t.includes('返回集市首页'));
     await shot('01-登录页');
     check('登录页无 JS 错误', cdp.drainErrors().length === 0, cdp.drainErrors().join(' | '));
 
@@ -403,6 +404,12 @@ const run = async () => {
     await goto('#/admin', 1200);
     t = await text();
     check('普通用户被拦截管理后台', t.includes('需要管理员权限'));
+
+    // 权限卡 → 去管理员登录：学生身份保留的同时渲染管理员登录页（双会话入口）
+    await cdp.eval(`[...document.querySelectorAll('button')].find(b => b.textContent.trim() === '去管理员登录')?.click(); 1`);
+    await sleep(700);
+    t = await text();
+    check('权限卡可进入管理员登录页', t.includes('管理员账号') && t.includes('登 录'));
 
     // ---------- 12. 管理员登录（双会话：不影响同浏览器的学生登录） → 各后台页面 ----------
     const studentTokenBefore = await cdp.eval(`localStorage.getItem('cm_token')`);

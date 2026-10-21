@@ -79,6 +79,9 @@ export function render() {
           ? '管理员演示账号：<code>admin</code> / <code>123456</code>（超级管理员）<br>普通管理员：<code>auditor</code> / <code>123456</code>'
           : '学生演示账号（密码均为 <code>123456</code>）：<br>买家/卖家 <code>241603010213</code>（谭以勒）<br>卖家 <code>241603010301</code>（李思远）'
       }));
+      body.append(h('div', { style: { textAlign: 'center', marginTop: 'var(--space-14)' } },
+        h('button', { class: 'btn-link', text: '先去逛逛 · 返回集市首页 →', onClick: () => { window.location.hash = '#/home'; } })
+      ));
     } else {
       const no = h('input', { type: 'text', placeholder: '如 241603010213' });
       const nick = h('input', { type: 'text', placeholder: '2~20 个字符' });
@@ -111,6 +114,9 @@ export function render() {
       }
       body.append(btn);
       body.append(h('div', { class: 'auth-tip', text: '注册后需在「个人中心」完成实名认证，方可发布商品。' }));
+      body.append(h('div', { style: { textAlign: 'center', marginTop: 'var(--space-14)' } },
+        h('button', { class: 'btn-link', text: '先去逛逛 · 返回集市首页 →', onClick: () => { window.location.hash = '#/home'; } })
+      ));
     }
 
     panel.replaceChildren(h('div', { class: 'logo', style: { marginBottom: 'var(--space-22)' } },

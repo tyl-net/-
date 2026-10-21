@@ -87,6 +87,8 @@ function userMenu(u) {
     if (u.type !== 'admin') {
       menu.append(item('个人中心', () => go('#/profile')));
       menu.append(item('我的订单', () => go('#/orders')));
+      // 管理后台入口收进菜单：首页顶栏不再直接露出
+      menu.append(item('管理后台', () => { sessionStorage.setItem('cm_login_role', 'admin'); go('#/admin'); }));
     } else {
       menu.append(item('数据看板', () => go('#/admin')));
     }
@@ -112,14 +114,12 @@ function topbar(activeNav, u) {
   );
   const right = h('div', { class: 'topbar-right' });
   if (isGuest) {
-    // 游客：右上角提供登录入口；管理后台入口也可直接进
-    right.append(h('button', { class: 'btn btn-ghost btn-sm', text: '管理后台', onClick: () => { sessionStorage.setItem('cm_login_role', 'admin'); go('#/admin'); }, title: '进入管理员视图' }));
+    // 游客：右上角仅登录入口（管理员可从登录页的「管理员登录」页签进入）
     right.append(h('button', { class: 'btn btn-primary btn-sm', text: '登录', onClick: () => go('#/login') }));
   } else if (isAdmin) {
     right.append(h('button', { class: 'btn btn-ghost btn-sm', text: '返回前台', onClick: () => go('#/home'), title: '以管理员身份浏览集市（只读）' }));
     right.append(userMenu(u));
   } else {
-    right.append(h('button', { class: 'btn btn-ghost btn-sm', text: '管理后台', onClick: () => { sessionStorage.setItem('cm_login_role', 'admin'); go('#/admin'); }, title: '进入管理员视图' }));
     right.append(userMenu(u));
   }
   return h('header', { class: 'topbar' },
@@ -158,9 +158,12 @@ async function render() {
     return;
   }
 
-  // 登录页本身：已登录则回首页/看板；未登录正常渲染
+  // 登录页本身：已登录则回首页/看板；但带着「管理员登录」提示时允许保留学生身份登录管理员（双会话核心场景）
   if (window.location.hash === '#/login') {
-    if (loggedIn) { window.location.hash = u.type === 'admin' ? '#/admin' : '#/home'; return; }
+    if (loggedIn && sessionStorage.getItem('cm_login_role') !== 'admin') {
+      window.location.hash = u.type === 'admin' ? '#/admin' : '#/home';
+      return;
+    }
     app.replaceChildren(authView.render());
     return;
   }
