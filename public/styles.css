@@ -247,6 +247,8 @@ input::placeholder, textarea::placeholder { color: var(--input-placeholder); }
 .table-wrap { overflow-x: auto; border-radius: var(--radius-10); border: 1px solid var(--line); }
 table { width: 100%; border-collapse: collapse; font-size: var(--font-size-sm); background: var(--color-bg-surface); }
 th, td { padding: var(--table-cell-padding-y) var(--table-cell-padding-x); text-align: left; border-bottom: 1px solid var(--line); vertical-align: middle; }
+/* 窄屏下单元格不折行，靠横向滚动浏览（避免昵称等被压成竖排单字） */
+.table-wrap td { white-space: nowrap; }
 th { background: var(--table-head-bg); font-weight: var(--font-weight-semibold); color: var(--ink-2); font-size: var(--font-size-xs); white-space: nowrap; }
 tbody tr:last-child td { border-bottom: none; }
 tbody tr:hover { background: var(--table-row-hover); }
@@ -452,18 +454,83 @@ tbody tr:hover { background: var(--table-row-hover); }
 .detail-thumbs img:hover { border-color: var(--brand); }
 .detail-thumbs img.active { border: 2px solid var(--brand); }
 
-/* 响应式 */
+/* ============ 响应式 ============ */
+/* 平板 / 中等屏 */
 @media (max-width: 900px) {
   .auth-wrap { grid-template-columns: 1fr; }
   .auth-hero { display: none; }
-  .detail-top { grid-template-columns: 1fr; }
-  .mainnav { overflow-x: auto; }
+  .auth-panel { padding: var(--space-40) var(--space-20); }
+  .detail-top { grid-template-columns: 1fr; gap: var(--space-16); }
+  .detail-cover { max-height: 60vh; }
   .topbar-inner { gap: var(--space-12); padding: 0 var(--space-12); }
   .logo-sub { display: none; }
+  .mainnav { gap: var(--space-2); }
+  .mainnav a { padding: var(--space-8) var(--space-10); }
   .page { padding: var(--space-16) var(--space-12) var(--space-48); }
+  .stat-grid { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-10); }
 }
+
+/* 手机屏 */
 @media (max-width: 620px) {
+  .logo-text { font-size: var(--font-size-lg); }
+  .logo-mark { width: 30px; height: 30px; }
+  /* 导航：横向滚动 + 隐藏滚动条（移动端 tab 式导航） */
+  .mainnav { overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; }
+  .mainnav::-webkit-scrollbar { display: none; }
+  .mainnav a { font-size: var(--font-size-sm); padding: var(--space-6) var(--space-12); flex-shrink: 0; }
+  .topbar-right { gap: var(--space-8); }
   .userchip-sub { display: none; }
-  .goods-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--space-12); }
-  .order-body { flex-direction: column; align-items: stretch; }
+
+  .page { padding: var(--space-12) var(--space-10) var(--space-40); }
+  .page-head { flex-direction: column; align-items: flex-start; gap: var(--space-10); }
+  .page-title { font-size: var(--font-size-xl); }
+  .card { padding: var(--space-12); }
+  .card-title { font-size: var(--font-size-md); margin-bottom: var(--space-10); }
+
+  /* 商品网格：两列 */
+  .goods-grid { grid-template-columns: repeat(2, 1fr); gap: var(--space-10); }
+  .goods-title { font-size: var(--font-size-sm); min-height: 0; -webkit-line-clamp: 2; }
+  .goods-body { padding: var(--space-10); gap: var(--space-6); }
+  .goods-foot { flex-direction: column; align-items: flex-start; gap: var(--space-6); }
+
+  /* 搜索工具条：搜索框独占一行 */
+  .search-box { flex: 1 1 100%; min-width: 0; }
+  .toolbar { gap: var(--space-8); }
+
+  /* 订单卡：纵向堆叠，操作按钮铺满 */
+  .order-body { flex-direction: column; align-items: stretch; gap: var(--space-10); }
+  .order-head { gap: var(--space-8); }
+  .order-actions { width: 100%; }
+  .order-actions .btn { flex: 1; }
+
+  /* 评价：头部可换行，时间不再右顶 */
+  .review-head { flex-wrap: wrap; }
+  .review-time { margin-left: 0; width: 100%; }
+  .review-reply, .review-additional { margin-left: 0; }
+
+  /* 弹窗：贴近屏边 */
+  .modal-mask { padding: var(--space-10); }
+  .modal-head { padding: var(--space-14) var(--space-14) var(--space-10); }
+  .modal-body { padding: var(--space-14); }
+  .modal-foot { padding: var(--space-10) var(--space-14); flex-wrap: wrap; }
+
+  /* 认证页 */
+  .auth-panel { padding: var(--space-24) var(--space-16); }
+
+  /* 分页：可横向滚动 */
+  .pager { flex-wrap: wrap; }
+
+  /* 统计条：标签收窄 */
+  .bar-label { width: 60px; }
+
+  /* 用户菜单下拉定位适配 */
+  .userchip-name { max-width: 88px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
+
+/* 超小屏（≤380px） */
+@media (max-width: 380px) {
+  .logo-sub, .logo-text { display: none; }
+  .goods-grid { gap: var(--space-8); }
+  .detail-cover { max-height: 46vh; }
+  .btn { padding: var(--space-6) var(--space-12); }
 }
