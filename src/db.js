@@ -38,7 +38,6 @@ CREATE TABLE IF NOT EXISTS t_user (
   nickname     VARCHAR(50)  NOT NULL,
   phone        VARCHAR(20),
   real_name    VARCHAR(30),
-  email        VARCHAR(60),
   avatar       VARCHAR(200),
   credit_score INTEGER      DEFAULT 100,
   is_verified  INTEGER      DEFAULT 0,
@@ -193,18 +192,18 @@ export function seedIfEmpty() {
 
   const pwd = hashPassword('123456');
   const insUser = db.prepare(
-    `INSERT INTO t_user(student_no,password,nickname,phone,real_name,email,credit_score,is_verified,status,avatar)
-     VALUES(?,?,?,?,?,?,?,?,?,?)`
+    `INSERT INTO t_user(student_no,password,nickname,phone,real_name,credit_score,is_verified,status,avatar)
+     VALUES(?,?,?,?,?,?,?,?,?)`
   );
   const users = [
-    ['241603010213', '谭以勒', '13800000001', '谭以勒', 'tanye@campus.edu', 108, 1, 1, '谭'],
-    ['241603010301', '李思远', '13800000002', '李思远', 'lisy@campus.edu', 108, 1, 1, '李'],
-    ['241603010415', '王雨桐', '13800000003', '王雨桐', 'wangyt@campus.edu', 108, 1, 1, '王'],
-    ['241603010522', '陈嘉禾', '13800000004', '陈嘉禾', 'chenjh@campus.edu', 100, 1, 1, '陈'],
-    ['241603010607', '赵一鸣', '13800000005', '赵一鸣', 'zhaoym@campus.edu', 100, 0, 1, '赵'],
-    ['241603010718', '周未然', '13800000006', '周未然', 'zhouwr@campus.edu', 100, 1, 0, '周'],
+    ['241603010213', '谭以勒', '13800000001', '谭以勒', 108, 1, 1, '谭'],
+    ['241603010301', '李思远', '13800000002', '李思远', 108, 1, 1, '李'],
+    ['241603010415', '王雨桐', '13800000003', '王雨桐', 108, 1, 1, '王'],
+    ['241603010522', '陈嘉禾', '13800000004', '陈嘉禾', 100, 1, 1, '陈'],
+    ['241603010607', '赵一鸣', '13800000005', '赵一鸣', 100, 0, 1, '赵'],
+    ['241603010718', '周未然', '13800000006', '周未然', 100, 1, 0, '周'],
   ];
-  users.forEach((u) => insUser.run(u[0], pwd, u[1], u[2], u[3], u[4], u[5], u[6], u[7], u[8]));
+  users.forEach((u) => insUser.run(u[0], pwd, u[1], u[2], u[3], u[4], u[5], u[6], u[7]));
 
   const insGoods = db.prepare(
     `INSERT INTO t_goods(seller_id,title,category,price,quality,description,images,audit_status,goods_status,view_count,created_at)

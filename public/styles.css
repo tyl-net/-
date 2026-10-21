@@ -164,7 +164,7 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; }
 .field-label { font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); color: var(--ink-2); }
 .req { color: var(--danger); font-style: normal; margin-left: var(--space-4); }
 .field-hint { font-size: var(--font-size-xs); color: var(--ink-3); }
-input[type=text], input[type=password], input[type=number], input[type=email], input[type=tel], select, textarea {
+input[type=text], input[type=password], input[type=number], input[type=tel], select, textarea {
   width: 100%; padding: var(--space-10) var(--space-12); border: 1px solid var(--input-border); border-radius: var(--input-radius);
   background: var(--input-bg); color: var(--ink); outline: none; transition: var(--duration-fast) var(--ease-standard); resize: vertical;
 }

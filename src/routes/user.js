@@ -12,7 +12,6 @@ function publicUser(u) {
     student_no: u.student_no,
     nickname: u.nickname,
     phone: u.phone,
-    email: u.email,
     avatar: u.avatar,
     real_name: u.real_name,
     credit_score: u.credit_score,
@@ -23,7 +22,7 @@ function publicUser(u) {
 }
 
 export function registerUser(router) {
-  // 用户注册（校园邮箱/学号认证注册）
+  // 用户注册（学号认证注册）
   router.post('/api/user/register', async (req, res, body) => {
     const student_no = String(body.student_no || '').trim();
     const password = String(body.password || '');
@@ -117,11 +116,6 @@ export function registerUser(router) {
       const phone = String(body.phone || '').trim();
       if (phone && !/^1\d{10}$/.test(phone)) throw bad('手机号格式不正确');
       sets.push('phone=?'); args.push(phone || null);
-    }
-    if (body.email !== undefined) {
-      const email = String(body.email || '').trim();
-      if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) throw bad('邮箱格式不正确');
-      sets.push('email=?'); args.push(email || null);
     }
     if (body.avatar !== undefined && String(body.avatar || '').trim() !== '') {
       const avatar = String(body.avatar).trim();

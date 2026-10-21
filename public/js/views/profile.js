@@ -43,7 +43,7 @@ export async function render(root) {
       ),
       h('div', { class: 'detail-attrs mt-16', style: { marginBottom: '0' } },
         attr('昵称', u.nickname), attr('学号', u.student_no), attr('手机号', u.phone || '未填写'),
-        attr('邮箱', u.email || '未填写'), attr('真实姓名', u.real_name || '未认证'),
+        attr('真实姓名', u.real_name || '未认证'),
         attr('实名状态', ['未认证', '已认证', '待复核'][u.is_verified])
       )
     ),
@@ -87,7 +87,6 @@ export async function render(root) {
       fields: [
         { name: 'nickname', label: '昵称', required: true, value: u.nickname },
         { name: 'phone', label: '手机号', value: u.phone || '', placeholder: '用于交易沟通' },
-        { name: 'email', label: '校园邮箱', value: u.email || '', placeholder: '选填' },
       ],
     });
     if (!r) return;
