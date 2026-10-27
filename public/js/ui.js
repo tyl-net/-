@@ -170,7 +170,21 @@ export function cover(goods, { height = 150, big = false } = {}) {
   const first = parseImages(goods.images)[0];
   if (first) {
     return h('div', { class: 'cover', style: { height: height + 'px' } },
-      h('img', { src: first, alt: goods.title, loading: 'lazy' }));
+      h('img', {
+        src: first, alt: goods.title, loading: 'lazy',
+        // 外链图片加载失败时回退为分类渐变封面，避免演示时破图
+        onerror: (e) => {
+          const el = e.currentTarget;
+          const box = el.parentNode;
+          if (!box) return;
+          box.classList.add('cover-art');
+          box.style.background = `linear-gradient(135deg, ${st.from}, ${st.to})`;
+          box.replaceChildren(
+            h('span', { class: 'cover-icon', style: { fontSize: (big ? 66 : 44) + 'px' }, text: st.icon }),
+            h('span', { class: 'cover-cat', text: goods.category })
+          );
+        },
+      }));
   }
   return h('div', {
     class: 'cover cover-art',

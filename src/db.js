@@ -168,6 +168,25 @@ try {
   console.warn('[db] 昵称唯一索引创建失败（存在历史重复昵称，请先人工处理）:', e.message);
 }
 
+// 商品图片（v1.3）：演示商品配网络图片 URL（Unsplash CDN）；已有库按标题幂等补图
+const GOODS_IMG = {
+  '《软件工程》张海藩 第5版 教材': 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=70',
+  '罗技 MX Master 3S 无线鼠标': 'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?auto=format&fit=crop&w=600&q=70',
+  'Kindle Paperwhite 5 电子书阅读器': 'https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?auto=format&fit=crop&w=600&q=70',
+  '《考研数学 660 题》数学一': 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=600&q=70',
+  '尤克里里 23 寸 单板': 'https://images.unsplash.com/photo-1510915361894-db8b60106cb1?auto=format&fit=crop&w=600&q=70',
+  'NIKE Air Zoom 跑鞋 42码': 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=600&q=70',
+  '大学英语四级真题（近5年）': 'https://images.unsplash.com/photo-1592496431122-2349e0fbc666?auto=format&fit=crop&w=600&q=70',
+  '美的 4L 电饭煲': 'https://images.unsplash.com/photo-1590794056226-79ef3a8147e1?auto=format&fit=crop&w=600&q=70',
+  'Beats Studio3 头戴耳机': 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=600&q=70',
+  '宜家 台灯 可调光护眼': 'https://images.unsplash.com/photo-1507473885765-e6ed057f782c?auto=format&fit=crop&w=600&q=70',
+  '宿舍折叠小书桌 白色': 'https://images.unsplash.com/photo-1518455027359-f3f8164ba6bd?auto=format&fit=crop&w=600&q=70',
+  '膳魔师保温杯 500ml': 'https://images.unsplash.com/photo-1602143407151-7111542de6e8?auto=format&fit=crop&w=600&q=70',
+  '《离散数学》左孝凌 教材': 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=70',
+};
+const updImg = db.prepare("UPDATE t_goods SET images=? WHERE title=? AND (images IS NULL OR images='' OR images LIKE 'data:%')");
+for (const [title, url] of Object.entries(GOODS_IMG)) updImg.run(JSON.stringify([url]), title);
+
 // 商品类别（与前端下拉一致）
 export const CATEGORIES = ['教材书籍', '电子数码', '生活用品', '体育运动', '服饰美妆', '其他'];
 export const QUALITIES = ['全新', '九成新', '八成新', '七成新及以下'];
@@ -227,9 +246,10 @@ export function seedIfEmpty() {
     [3, '膳魔师保温杯 500ml', '生活用品', 39.0, '全新', '全新未拆封，朋友送重了，保温效果极佳。', 1, 1, 58, '2026-09-27 09:05:00'],
     [4, '《离散数学》左孝凌 教材', '教材书籍', 25.0, '九成新', '计算机专业教材，书况良好，附赠手写笔记一份。', 1, 1, 73, '2026-09-29 15:40:00'],
   ];
-  goods.forEach((g) =>
-    insGoods.run(g[0], g[1], g[2], g[3], g[4], g[5], '', g[6], g[7], g[8], g[9])
-  );
+  goods.forEach((g) => {
+    const img = GOODS_IMG[g[1]];
+    insGoods.run(g[0], g[1], g[2], g[3], g[4], g[5], img ? JSON.stringify([img]) : '', g[6], g[7], g[8], g[9]);
+  });
 
   const insOrder = db.prepare(
     `INSERT INTO t_order(order_no,buyer_id,seller_id,goods_id,amount,order_status,pay_time,finish_time,cancel_reason,cancel_by,created_at,updated_at)
