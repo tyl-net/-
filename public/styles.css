@@ -291,6 +291,21 @@ tbody tr:hover { background: var(--table-row-hover); }
 .attr-k { font-size: var(--font-size-xs); color: var(--ink-3); }
 .attr-v { font-weight: var(--font-weight-semibold); font-size: var(--font-size-md); }
 .detail-desc { background: var(--bg); border-radius: var(--radius-10); padding: var(--space-14) var(--space-16); color: var(--ink-2); white-space: pre-wrap; line-height: var(--line-height-relaxed); }
+.detail-desc { display: flex; flex-direction: column; gap: var(--space-12); }
+
+/* ---------- 在线编译器：描述内代码块 ---------- */
+.code-block { border: 1px solid var(--line); border-radius: var(--radius-10); overflow: hidden; background: var(--color-bg-surface); }
+.code-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-10); padding: var(--space-8) var(--space-12); background: var(--color-bg-subtle); border-bottom: 1px solid var(--line); }
+.code-lang { font-size: var(--font-size-xs); font-weight: var(--font-weight-semibold); color: var(--ink-2); font-family: ui-monospace, Consolas, monospace; }
+.code-lang-muted { font-size: var(--font-size-xs); color: var(--ink-3); }
+.code-pre { margin: 0; padding: var(--space-12) var(--space-14); background: var(--color-bg-muted); overflow-x: auto; font-size: var(--font-size-sm); line-height: var(--line-height-relaxed); }
+.code-pre code { font-family: ui-monospace, Consolas, monospace; color: var(--ink); white-space: pre; }
+.code-out { border-top: 1px solid var(--line); background: var(--color-bg-surface); padding: var(--space-10) var(--space-14); font-family: ui-monospace, Consolas, monospace; font-size: var(--font-size-sm); white-space: pre-wrap; }
+.code-line { line-height: var(--line-height-relaxed); }
+.code-line-log { color: var(--ink); }
+.code-line-err { color: var(--color-danger-fg); }
+.code-line-warn { color: var(--color-warning-fg); }
+.code-line-empty { color: var(--ink-3); }
 
 .review-item { padding: var(--space-14) 0; border-bottom: 1px solid var(--line); }
 .review-item:last-child { border-bottom: none; }

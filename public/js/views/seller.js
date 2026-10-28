@@ -26,7 +26,9 @@ export async function renderPublish(root) {
       h('label', { class: 'field' }, h('span', { class: 'field-label' }, '出售价格（元）', h('i', { class: 'req', text: '*' })), price),
       h('label', { class: 'field' }, h('span', { class: 'field-label', text: '成色' }), quality)
     ),
-    h('label', { class: 'field' }, h('span', { class: 'field-label' }, '商品描述', h('i', { class: 'req', text: '*' })), desc),
+    h('label', { class: 'field' }, h('span', { class: 'field-label' }, '商品描述', h('i', { class: 'req', text: '*' })), desc,
+      h('span', { class: 'field-hint', text: '支持 ```js 代码块：买家可在商品详情页在线运行 JavaScript 代码' })
+    ),
     h('label', { class: 'field' },
       h('span', { class: 'field-label', text: '商品图片' }),
       picker.el,

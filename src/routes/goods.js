@@ -15,7 +15,7 @@ function validateGoods(body) {
   if (title.length < 2 || title.length > 60) throw bad('商品名称长度应为 2~60 个字符');
   if (!CATEGORIES.includes(category)) throw bad('请选择合法的商品类别');
   if (!Number.isFinite(price) || price <= 0 || price > 999999) throw bad('请填写合法价格（大于 0）');
-  if (description.length > 1000) throw bad('商品描述不能超过 1000 字');
+  if (description.length > 2000) throw bad('商品描述不能超过 2000 字（含代码）');
   return { title, category, price: Math.round(price * 100) / 100, quality, description };
 }
 

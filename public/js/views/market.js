@@ -216,13 +216,107 @@ export async function renderDetail(root, params) {
     ),
     h('div', { class: 'card' },
       h('h3', { class: 'card-title', text: '商品描述' }),
-      h('div', { class: 'detail-desc', text: g.description || '卖家暂未填写详细描述' })
+      renderDescription(g.description)
     ),
     h('div', { class: 'card' },
       h('h3', { class: 'card-title', text: `交易评价（${data.reviews.length}）` }),
       data.reviews.length ? h('div', {}, ...data.reviews.map(reviewItem)) : empty('暂无评价', '完成交易后即可评价该商品')
     )
   );
+}
+
+// ---------- 在线编译器：描述内 ```js 代码块，沙箱运行 ----------
+/** 按 ``` 围栏切分描述，返回 [{type:'text'|'code', lang, content}] */
+function parseDescBlocks(desc) {
+  if (!desc || !String(desc).trim()) return [{ type: 'text', content: '卖家暂未填写详细描述' }];
+  const out = [];
+  String(desc).split('```').forEach((part, i) => {
+    if (i % 2 === 0) {
+      if (part.trim()) out.push({ type: 'text', content: part });
+    } else {
+      const nl = part.indexOf('\n');
+      const lang = nl >= 0 ? part.slice(0, nl).trim().toLowerCase() : '';
+      const content = (nl >= 0 ? part.slice(nl + 1) : part).replace(/\n$/, '');
+      out.push({ type: 'code', lang, content });
+    }
+  });
+  if (!out.length) out.push({ type: 'text', content: '卖家暂未填写详细描述' });
+  return out;
+}
+
+/** 在沙箱 iframe（srcdoc + allow-scripts）中运行 JS，捕获 console 输出与异常 */
+function runJS(code, onLog, onDone) {
+  const iframe = document.createElement('iframe');
+  iframe.setAttribute('sandbox', 'allow-scripts');
+  iframe.style.cssText = 'position:fixed;left:-9999px;width:0;height:0;border:0;';
+  document.body.appendChild(iframe);
+  let done = false;
+  const timer = setTimeout(() => finish('timeout', '运行超时（5 秒），可能存在死循环'), 5000);
+  function finish(type, msg) {
+    if (done) return;
+    done = true;
+    clearTimeout(timer);
+    setTimeout(() => iframe.remove(), 300); // 给异步输出留一点时间
+    onDone(type, msg);
+  }
+  window.addEventListener('message', (e) => {
+    if (e.source !== iframe.contentWindow) return;
+    if (e.data && e.data.type === 'log') onLog(e.data.msg);
+    else if (e.data && e.data.type === 'err') finish('error', e.data.msg);
+    else if (e.data && e.data.type === 'end') finish('ok', '');
+  });
+  // 转义代码内的 </script>，避免提前闭合 srcdoc 的脚本标签
+  const safe = String(code).replace(/<\/script>/gi, '<\\/script>');
+  iframe.srcdoc = `<!DOCTYPE html><html><head><meta charset="utf-8"><script>
+    var __ser = function(x){ if(typeof x==='object'){ try{ return JSON.stringify(x); }catch(e){ return String(x); } } return String(x); };
+    var __log = function(){ try{ parent.postMessage({type:'log', msg:[].slice.call(arguments).map(__ser).join(' ')}, '*'); }catch(e){} };
+    window.console = { log:__log, info:__log, warn:__log, error:__log };
+    window.onerror = function(m){ try{ parent.postMessage({type:'err', msg:String(m)}, '*'); }catch(e){} return true; };
+  </script></head><body><script>
+    try {
+      ${safe}
+    } catch(e) { parent.postMessage({type:'err', msg:String(e && e.message ? e.message : e)}, '*'); }
+    parent.postMessage({type:'end'}, '*');
+  </script></body></html>`;
+}
+
+/** 渲染单个代码块：JS 提供「运行」按钮，其它语言仅展示 */
+function codeBlock(lang, code) {
+  const runnable = !lang || lang === 'js' || lang === 'javascript';
+  const out = h('div', { class: 'code-out', style: { display: 'none' } });
+  const btn = h('button', { class: 'btn btn-sm btn-primary', text: '运行' });
+  btn.onclick = () => {
+    btn.disabled = true; btn.textContent = '运行中…';
+    out.style.display = 'block';
+    out.replaceChildren();
+    runJS(code,
+      (msg) => out.append(h('div', { class: 'code-line code-line-log', text: msg })),
+      (type, msg) => {
+        btn.disabled = false; btn.textContent = '运行';
+        if (type === 'error') out.append(h('div', { class: 'code-line code-line-err', text: msg }));
+        else if (type === 'timeout') out.append(h('div', { class: 'code-line code-line-warn', text: msg }));
+        else if (!out.childElementCount) out.append(h('div', { class: 'code-line code-line-empty', text: '// 运行完成（无输出）' }));
+      });
+  };
+  return h('div', { class: 'code-block' },
+    h('div', { class: 'code-head' },
+      h('span', { class: 'code-lang', text: lang || 'javascript' }),
+      runnable ? btn : h('span', { class: 'code-lang-muted', text: '仅 JavaScript 支持在线运行' })
+    ),
+    h('pre', { class: 'code-pre' }, h('code', { text: code })),
+    runnable ? out : null
+  );
+}
+
+/** 商品描述渲染：普通文字保留换行，```js 代码块渲染为可运行代码卡片 */
+function renderDescription(desc) {
+  const box = h('div', { class: 'detail-desc' });
+  for (const b of parseDescBlocks(desc)) {
+    box.append(b.type === 'text'
+      ? h('div', { class: 'desc-para', text: b.content })
+      : codeBlock(b.lang, b.content));
+  }
+  return box;
 }
 
 export function reviewItem(r) {
