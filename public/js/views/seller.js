@@ -27,7 +27,7 @@ export async function renderPublish(root) {
       h('label', { class: 'field' }, h('span', { class: 'field-label', text: '成色' }), quality)
     ),
     h('label', { class: 'field' }, h('span', { class: 'field-label' }, '商品描述', h('i', { class: 'req', text: '*' })), desc,
-      h('span', { class: 'field-hint', text: '支持 ```js 代码块：买家可在商品详情页在线运行 JavaScript 代码' })
+      h('span', { class: 'field-hint', text: '支持 ```js 代码块：买家可在商品详情页的在线编辑器中修改并运行 JavaScript 代码' })
     ),
     h('label', { class: 'field' },
       h('span', { class: 'field-label', text: '商品图片' }),

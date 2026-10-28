@@ -307,6 +307,23 @@ tbody tr:hover { background: var(--table-row-hover); }
 .code-line-warn { color: var(--color-warning-fg); }
 .code-line-empty { color: var(--ink-3); }
 
+/* 在线编辑器：行号栏 + 可输入代码区（等宽、Tab 缩进） */
+.code-editor { display: flex; background: var(--color-bg-muted); }
+.code-gutter {
+  flex-shrink: 0; min-width: 36px; padding: var(--space-12) var(--space-8);
+  background: var(--color-bg-subtle); border-right: 1px solid var(--line);
+  color: var(--ink-3); font-family: ui-monospace, Consolas, monospace; font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed); text-align: right; white-space: pre;
+  user-select: none; overflow: hidden;
+}
+.code-editor .code-input {
+  flex: 1; width: auto; min-height: 132px; padding: var(--space-12) var(--space-14);
+  border: none; border-radius: 0; background: transparent; color: var(--ink);
+  font-family: ui-monospace, Consolas, monospace; font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed); resize: vertical; white-space: pre; overflow: auto; outline: none;
+}
+.code-editor .code-input:focus { border: none; box-shadow: none; }
+
 .review-item { padding: var(--space-14) 0; border-bottom: 1px solid var(--line); }
 .review-item:last-child { border-bottom: none; }
 .review-head { display: flex; align-items: center; gap: var(--space-10); margin-bottom: var(--space-8); }

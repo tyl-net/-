@@ -280,31 +280,70 @@ function runJS(code, onLog, onDone) {
   </script></body></html>`;
 }
 
-/** 渲染单个代码块：JS 提供「运行」按钮，其它语言仅展示 */
+/** 渲染代码区：JS 为可编辑的在线编辑器（带行号、Tab 缩进、运行/重置），其它语言只读展示 */
 function codeBlock(lang, code) {
   const runnable = !lang || lang === 'js' || lang === 'javascript';
+  if (!runnable) {
+    return h('div', { class: 'code-block' },
+      h('div', { class: 'code-head' },
+        h('span', { class: 'code-lang', text: lang }),
+        h('span', { class: 'code-lang-muted', text: '仅 JavaScript 支持在线编辑运行' })
+      ),
+      h('pre', { class: 'code-pre' }, h('code', { text: code }))
+    );
+  }
+
+  const input = h('textarea', { class: 'code-input', spellcheck: 'false', rows: String(Math.max(6, code.split('\n').length + 1)) });
+  input.value = code;
+  const gutter = h('div', { class: 'code-gutter', 'aria-hidden': 'true' });
   const out = h('div', { class: 'code-out', style: { display: 'none' } });
-  const btn = h('button', { class: 'btn btn-sm btn-primary', text: '运行' });
-  btn.onclick = () => {
-    btn.disabled = true; btn.textContent = '运行中…';
+  const runBtn = h('button', { class: 'btn btn-sm btn-primary', text: '运行' });
+  const resetBtn = h('button', { class: 'btn btn-sm btn-ghost', text: '重置' });
+
+  const syncGutter = () => {
+    gutter.textContent = Array.from({ length: input.value.split('\n').length }, (_, i) => i + 1).join('\n');
+    gutter.scrollTop = input.scrollTop;
+  };
+  input.addEventListener('input', syncGutter);
+  input.addEventListener('scroll', () => { gutter.scrollTop = input.scrollTop; });
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      const s = input.selectionStart, en = input.selectionEnd;
+      input.value = input.value.slice(0, s) + '  ' + input.value.slice(en);
+      input.selectionStart = input.selectionEnd = s + 2;
+      syncGutter();
+    }
+  });
+  resetBtn.onclick = () => {
+    input.value = code;
+    out.style.display = 'none';
+    out.replaceChildren();
+    syncGutter();
+  };
+  runBtn.onclick = () => {
+    runBtn.disabled = true; runBtn.textContent = '运行中…';
     out.style.display = 'block';
     out.replaceChildren();
-    runJS(code,
+    runJS(input.value,
       (msg) => out.append(h('div', { class: 'code-line code-line-log', text: msg })),
       (type, msg) => {
-        btn.disabled = false; btn.textContent = '运行';
+        runBtn.disabled = false; runBtn.textContent = '运行';
         if (type === 'error') out.append(h('div', { class: 'code-line code-line-err', text: msg }));
         else if (type === 'timeout') out.append(h('div', { class: 'code-line code-line-warn', text: msg }));
         else if (!out.childElementCount) out.append(h('div', { class: 'code-line code-line-empty', text: '// 运行完成（无输出）' }));
       });
   };
+
+  const editor = h('div', { class: 'code-editor' }, gutter, input);
+  setTimeout(syncGutter, 0);
   return h('div', { class: 'code-block' },
     h('div', { class: 'code-head' },
       h('span', { class: 'code-lang', text: lang || 'javascript' }),
-      runnable ? btn : h('span', { class: 'code-lang-muted', text: '仅 JavaScript 支持在线运行' })
+      h('div', { class: 'flex-gap' }, resetBtn, runBtn)
     ),
-    h('pre', { class: 'code-pre' }, h('code', { text: code })),
-    runnable ? out : null
+    editor,
+    out
   );
 }
 
